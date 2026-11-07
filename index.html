@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Muse × Grok Bot Collaboration Monitor</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background-color: #0b0f19; color: #f3f4f6; font-family: ui-sans-serif, system-ui, sans-serif; }
+    canvas { background: radial-gradient(circle, #111827 0%, #030712 100%); display: block; }
+    .scrollbar-thin::-webkit-scrollbar { width: 6px; }
+    .scrollbar-thin::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
+  </style>
+</head>
+<body class="p-6 overflow-hidden">
+
+  <header class="flex justify-between items-center mb-4 bg-gray-900/80 p-4 rounded-xl border border-gray-800 backdrop-blur-md">
+    <div>
+      <h1 class="text-xl font-bold tracking-wider text-cyan-400">MUSE × GROK // COLLABORATION MONITOR</h1>
+      <p class="text-xs text-gray-400 mt-0.5">Repo-based messenger topology · Agent status · Message flow</p>
+    </div>
+    <div class="flex gap-4 text-sm">
+      <div class="bg-gray-950 px-4 py-2 rounded-lg border border-gray-800">
+        <span class="text-gray-500 font-mono">AGENTS:</span>
+        <span id="agent-count" class="text-cyan-400 font-bold ml-1">0</span>
+      </div>
+      <div class="bg-gray-950 px-4 py-2 rounded-lg border border-gray-800">
+        <span class="text-gray-500 font-mono">ACTIVE LINKS:</span>
+        <span id="link-count" class="text-emerald-400 font-bold ml-1">0</span>
+      </div>
+      <div class="bg-gray-950 px-4 py-2 rounded-lg border border-gray-800">
+        <span class="text-gray-500 font-mono">LAST POLL:</span>
+        <span id="last-poll" class="text-amber-400 font-bold ml-1">—</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="grid grid-cols-4 gap-4 h-[calc(100vh-120px)]">
+    <section class="col-span-3 relative bg-gray-950 rounded-xl border border-gray-800 overflow-hidden shadow-2xl">
+      <canvas id="monitorCanvas"></canvas>
+      <div class="absolute bottom-4 left-4 bg-gray-900/90 text-xs p-3 rounded-lg border border-gray-700 font-mono space-y-1">
+        <div class="flex items-center gap-2"><span class="w-2 h-2 bg-cyan-400 rounded-full"></span> Grok Bot</div>
+        <div class="flex items-center gap-2"><span class="w-2 h-2 bg-violet-400 rounded-full"></span> Muse Agent</div>
+        <div class="flex items-center gap-2"><span class="w-3 h-0.5 bg-emerald-500 inline-block"></span> Active collaboration / recent message</div>
+        <div class="flex items-center gap-2"><span class="w-3 h-0.5 border-t border-dashed border-amber-500 inline-block"></span> Pending / weak link</div>
+      </div>
+    </section>
+
+    <section class="col-span-1 flex flex-col gap-4">
+      <div class="bg-gray-900/50 p-4 rounded-xl border border-gray-800 flex-1 overflow-hidden flex flex-col">
+        <h3 class="text-xs font-mono font-bold tracking-widest text-gray-400 mb-3 uppercase">Agent Status</h3>
+        <div id="agent-list" class="space-y-2 overflow-y-auto flex-1 pr-1 scrollbar-thin text-xs font-mono"></div>
+      </div>
+      <div class="bg-gray-900/50 p-4 rounded-xl border border-gray-800 h-1/3 flex flex-col overflow-hidden">
+        <h3 class="text-xs font-mono font-bold tracking-widest text-gray-400 mb-2 uppercase">Message Feed</h3>
+        <div id="message-feed" class="flex-1 overflow-y-auto text-[11px] font-mono text-emerald-500 space-y-1 scrollbar-thin"></div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    /**
+     * Muse × Grok Collaboration Monitor
+     * High-grade, modular, fail-closed visualization of agent work and messenger flow.
+     *
+     * Data contract (replace mock with real poll of repo messenger):
+     * Agent: { id, name, kind: "grok"|"muse", status: "idle"|"running"|"blocked", lastTurnAt, x?, y? }
+     * Message: { id, from, to, timestamp, type, status: "pending"|"acked"|"done"|"failed", payloadSummary }
+     *
+     * Engineering notes:
+     * - Pure rendering loop; state is owned by MonitorState.
+     * - No external network calls in this file (sandbox-safe). Swap loadMock() for pollMessenger().
+     * - Canvas sized to container; handles resize.
+     * - Evidence labels preserved in message text when present.
+     */
+
+    class MonitorState {
+      constructor() {
+        this.agents = new Map();
+        this.messages = [];
+        this.links = [];
+      }
+
+      setAgents(list) {
+        this.agents.clear();
+        list.forEach(a => this.agents.set(a.id, { ...a }));
+      }
+
+      addMessage(msg) {
+        this.messages.unshift(msg);
+        if (this.messages.length > 50) this.messages.pop();
+        this.rebuildLinks();
+      }
+
+      rebuildLinks() {
+        const recent = this.messages.filter(m => Date.now() - new Date(m.timestamp).getTime() < 30 * 60 * 1000);
+        const seen = new Set();
+        this.links = [];
+        recent.forEach(m => {
+          const key = [m.from, m.to].sort().join("|");
+          if (!seen.has(key) && this.agents.has(m.from) && this.agents.has(m.to)) {
+            seen.add(key);
+            this.links.push({ from: m.from, to: m.to, strength: m.status === "done" ? 1 : 0.4 });
+          }
+        });
+      }
+    }
+
+    const state = new MonitorState();
+
+    // ---- Mock data (replace with real messenger poll) ----
+    function loadMock() {
+      const agents = [
+        { id: "commander", name: "E-Commerce Commander", kind: "grok", status: "idle", lastTurnAt: Date.now() - 120000 },
+        { id: "forge-lab", name: "Forge Lab", kind: "grok", status: "idle", lastTurnAt: Date.now() - 300000 },
+        { id: "auditor", name: "Independent Auditor", kind: "grok", status: "idle", lastTurnAt: Date.now() - 180000 },
+        { id: "chimera", name: "Project Chimera", kind: "grok", status: "idle", lastTurnAt: Date.now() - 600000 },
+        { id: "muse-spark", name: "Muse Spark 1.3", kind: "muse", status: "idle", lastTurnAt: Date.now() - 90000 },
+        { id: "muse-junior", name: "Muse Junior", kind: "muse", status: "blocked", lastTurnAt: Date.now() - 2400000 },
+      ];
+      state.setAgents(agents);
+
+      const now = Date.now();
+      [
+        { id: "m1", from: "commander", to: "forge-lab", timestamp: new Date(now - 600000).toISOString(), type: "request", status: "done", payloadSummary: "Draft Mandate Check page (web hero only)" },
+        { id: "m2", from: "forge-lab", to: "commander", timestamp: new Date(now - 480000).toISOString(), type: "response", status: "done", payloadSummary: "v2 draft ready at page-draft/forge-lab/v2/" },
+        { id: "m3", from: "commander", to: "auditor", timestamp: new Date(now - 420000).toISOString(), type: "request", status: "done", payloadSummary: "Claims recheck of v2" },
+        { id: "m4", from: "commander", to: "muse-spark", timestamp: new Date(now - 180000).toISOString(), type: "request", status: "pending", payloadSummary: "Verify web-variant hero against STYLE-BRIEF" },
+        { id: "m5", from: "chimera", to: "commander", timestamp: new Date(now - 90000).toISOString(), type: "support", status: "acked", payloadSummary: "Protocol review ready" },
+      ].forEach(m => state.addMessage(m));
+    }
+
+    // ---- Canvas rendering ----
+    const canvas = document.getElementById("monitorCanvas");
+    const ctx = canvas.getContext("2d");
+
+    function resize() {
+      const parent = canvas.parentElement;
+      canvas.width = parent.clientWidth;
+      canvas.height = parent.clientHeight;
+      layoutAgents();
+    }
+
+    function layoutAgents() {
+      const agents = [...state.agents.values()];
+      const cols = Math.ceil(Math.sqrt(agents.length));
+      const rows = Math.ceil(agents.length / cols);
+      const padX = canvas.width / (cols + 1);
+      const padY = canvas.height / (rows + 1);
+      agents.forEach((a, i) => {
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+        a.x = padX * (col + 1);
+        a.y = padY * (row + 1);
+      });
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Subtle grid
+      ctx.strokeStyle = "rgba(31,41,55,0.25)";
+      ctx.lineWidth = 1;
+      for (let x = 0; x < canvas.width; x += 50) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+      }
+      for (let y = 0; y < canvas.height; y += 50) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+      }
+
+      // Links
+      state.links.forEach(link => {
+        const a = state.agents.get(link.from);
+        const b = state.agents.get(link.to);
+        if (!a || !b) return;
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+        if (link.strength > 0.6) {
+          ctx.strokeStyle = "rgba(16,185,129,0.7)";
+          ctx.setLineDash([]);
+        } else {
+          ctx.strokeStyle = "rgba(245,158,11,0.6)";
+          ctx.setLineDash([5, 5]);
+        }
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.setLineDash([]);
+      });
+
+      // Agents
+      state.agents.forEach(agent => {
+        const color = agent.kind === "muse" ? "#a78bfa" : "#22d3ee";
+        const statusColor = agent.status === "blocked" ? "#ef4444" : agent.status === "running" ? "#f59e0b" : color;
+
+        ctx.beginPath();
+        ctx.arc(agent.x, agent.y, 16, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(255,255,255,0.04)";
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(agent.x, agent.y, 6, 0, Math.PI * 2);
+        ctx.fillStyle = statusColor;
+        ctx.fill();
+
+        ctx.fillStyle = "rgba(229,231,235,0.9)";
+        ctx.font = "11px ui-monospace, monospace";
+        ctx.textAlign = "center";
+        ctx.fillText(agent.name, agent.x, agent.y - 22);
+        ctx.fillStyle = "rgba(156,163,175,0.8)";
+        ctx.font = "9px ui-monospace, monospace";
+        ctx.fillText(agent.status.toUpperCase(), agent.x, agent.y + 28);
+      });
+
+      document.getElementById("agent-count").textContent = state.agents.size;
+      document.getElementById("link-count").textContent = state.links.length;
+      document.getElementById("last-poll").textContent = new Date().toLocaleTimeString();
+
+      renderAgentList();
+      renderMessageFeed();
+
+      requestAnimationFrame(draw);
+    }
+
+    function renderAgentList() {
+      const el = document.getElementById("agent-list");
+      el.innerHTML = "";
+      [...state.agents.values()].forEach(a => {
+        const row = document.createElement("div");
+        row.className = "flex justify-between items-center p-2 rounded bg-gray-950 border border-gray-800/60";
+        const kindColor = a.kind === "muse" ? "text-violet-400" : "text-cyan-400";
+        const statusColor = a.status === "blocked" ? "text-red-400" : a.status === "running" ? "text-amber-400" : "text-emerald-400";
+        row.innerHTML = `
+          <div>
+            <div class="${kindColor} font-bold">${a.name}</div>
+            <div class="text-gray-500">${a.id}</div>
+          </div>
+          <div class="${statusColor}">${a.status}</div>
+        `;
+        el.appendChild(row);
+      });
+    }
+
+    function renderMessageFeed() {
+      const el = document.getElementById("message-feed");
+      el.innerHTML = "";
+      state.messages.slice(0, 20).forEach(m => {
+        const div = document.createElement("div");
+        const time = new Date(m.timestamp).toLocaleTimeString();
+        div.textContent = `[${time}] ${m.from} → ${m.to}: ${m.payloadSummary} (${m.status})`;
+        el.appendChild(div);
+      });
+    }
+
+    // ---- Init ----
+    window.addEventListener("resize", resize);
+    loadMock();
+    resize();
+    draw();
+
+    // Placeholder for real messenger integration:
+    // async function pollMessenger() {
+    //   const res = await fetch("/api/messenger/recent"); // or GitHub raw / local proxy
+    //   const data = await res.json();
+    //   state.setAgents(data.agents);
+    //   data.messages.forEach(m => state.addMessage(m));
+    //   layoutAgents();
+    // }
+    // setInterval(pollMessenger, 15000);
+  </script>
+</body>
+</html>
