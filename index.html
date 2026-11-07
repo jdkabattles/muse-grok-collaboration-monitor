@@ -1,256 +1,351 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Muse × Grok Collaboration Monitor</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="dark">
+  <meta name="description" content="A local-first demonstration of the Muse and Grok collaboration monitor. Demo data is not real agent activity.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; img-src 'none'; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Muse × Grok — Collaboration Forge</title>
   <style>
-    :root { --bg: #0b0f19; --panel: #111827; --border: #1f2937; }
-    html, body { height: 100%; margin: 0; background: var(--bg); color: #e5e7eb; font-family: ui-sans-serif, system-ui, sans-serif; }
-    canvas { display: block; width: 100%; height: 100%; background: radial-gradient(circle, #111827 0%, #030712 100%); }
-    .panel { background: rgba(17, 24, 39, 0.8); border: 1px solid var(--border); border-radius: 0.75rem; }
-    .scrollbar-thin::-webkit-scrollbar { width: 5px; }
-    .scrollbar-thin::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
+    :root { color-scheme: dark; --bg:#111112; --panel:#1b1b1d; --inset:#151517; --line:#414144; --muted:#b3b1b2; --text:#f4f0eb; --spark:#ff7768; --steel:#828085; --mono:ui-monospace,SFMono-Regular,Consolas,monospace; }
+    * { box-sizing:border-box; }
+    html { background:var(--bg); font-size:16px; -webkit-text-size-adjust:100%; }
+    body { margin:0; color:var(--text); font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; line-height:1.5; }
+    button,input { font:inherit; }
+    button { cursor:pointer; }
+    :focus-visible { outline:3px solid var(--spark); outline-offset:4px; }
+    a { color:var(--spark); }
+    .skip { position:absolute; top:8px; left:8px; transform:translateY(-180%); z-index:10; padding:12px; background:var(--panel); }
+    .skip:focus { transform:none; }
+    .shell { width:100%; max-width:1440px; margin:auto; padding:20px 14px 28px; }
+    .shell > *, .workspace > *, .masthead > *, .panel-head > *, .agent-row > *, .message-top > *, .connection > * { min-width:0; }
+    .masthead { display:grid; gap:20px; padding:8px 0 26px; border-bottom:1px solid var(--line); }
+    .eyebrow,.section-no,.caption { font:600 .68rem/1.6 var(--mono); letter-spacing:.12em; text-transform:uppercase; }
+    .eyebrow { display:flex; flex-wrap:wrap; align-items:center; gap:8px; color:var(--muted); margin:0 0 14px; }
+    .spark { width:7px; height:7px; background:var(--spark); display:inline-block; flex:none; transform:rotate(45deg); }
+    h1 { font-size:clamp(2.25rem,8.5vw,4.5rem); letter-spacing:-.065em; line-height:1.02; margin:0; font-weight:850; overflow-wrap:anywhere; }
+    .subtitle { margin:12px 0 0; color:var(--muted); font-size:.94rem; }
+    .mast-meta { align-self:end; font:.75rem/1.8 var(--mono); color:var(--muted); }
+    .mast-meta p { margin:0; overflow-wrap:anywhere; }
+    .mast-meta strong { color:var(--text); font-weight:500; }
+    .mode-strip { display:flex; flex-wrap:wrap; align-items:center; gap:10px 18px; margin:20px 0; padding:12px 14px; border:1px solid var(--line); border-left:3px solid var(--spark); background:var(--inset); }
+    .mode-tag { flex:none; color:var(--spark); font:700 .7rem/1.5 var(--mono); letter-spacing:.1em; }
+    .mode-copy { margin:0; color:var(--muted); font-size:.8rem; flex:1 1 210px; overflow-wrap:anywhere; }
+    .stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:0 0 22px; }
+    .stat { border:1px solid var(--line); background:var(--panel); padding:12px 10px; min-width:0; }
+    .stat dt { color:var(--muted); font:.62rem/1.6 var(--mono); text-transform:uppercase; letter-spacing:.07em; overflow-wrap:anywhere; }
+    .stat dd { overflow-wrap:anywhere; margin:5px 0 0; font:600 1.65rem/1.2 var(--mono); }
+    .stat small { display:block; margin-top:5px; color:var(--muted); font-size:.65rem; line-height:1.45; overflow-wrap:anywhere; }
+    .workspace { display:grid; grid-template-columns:minmax(0,1fr); gap:18px; align-items:start; }
+    .panel { position:relative; border:1px solid var(--line); background:var(--panel); min-width:0; }
+    .panel::before,.panel::after { content:""; position:absolute; top:10px; width:4px; height:4px; border:1px solid #777479; background:#28282b; pointer-events:none; }
+    .panel::before { left:9px; } .panel::after { right:9px; }
+    .panel-head { display:flex; flex-wrap:wrap; gap:8px 16px; align-items:baseline; justify-content:space-between; padding:21px 20px 15px; border-bottom:1px solid var(--line); }
+    h2 { margin:0; font-size:1rem; letter-spacing:-.025em; font-weight:700; }
+    .section-no { margin-right:9px; color:var(--spark); }
+    .caption { color:var(--muted); font-size:.6rem; overflow-wrap:anywhere; }
+    .canvas-wrap { width:100%; min-width:0; background:var(--inset); }
+    canvas { display:block; width:100%; height:384px; }
+    .graph-note { padding:12px 16px; margin:0; border-top:1px solid var(--line); font-size:.74rem; color:var(--muted); }
+    .graph-legend { display:flex; flex-wrap:wrap; gap:8px 18px; padding:0 16px 14px; color:var(--muted); font:.65rem/1.7 var(--mono); }
+    .key { display:inline-block; width:9px; height:9px; border:1px solid var(--steel); margin-right:5px; }
+    .key-muse { transform:rotate(45deg); } .key-line { width:18px; height:0; vertical-align:middle; border-color:var(--spark); }
+    .directory { padding:0 16px; }
+    .agent-row { display:grid; grid-template-columns:38px minmax(0,1fr); gap:12px; padding:16px 0; border-bottom:1px solid var(--line); }
+    .agent-row:last-child { border-bottom:0; }
+    .ref { align-self:start; display:grid; place-items:center; min-height:34px; border:1px solid #66636a; background:var(--inset); color:var(--text); font:.66rem/1 var(--mono); }
+    .ref[data-kind="muse"] { border-top:2px solid var(--spark); }
+    .agent-name { display:block; margin:0 0 3px; font-size:.94rem; font-weight:650; overflow-wrap:anywhere; hyphens:auto; }
+    .agent-kind { color:var(--muted); font:.64rem/1.6 var(--mono); text-transform:uppercase; letter-spacing:.05em; }
+    .status { display:inline-block; margin:7px 0 0; padding:3px 7px; font:.75rem/1.5 var(--mono); border:1px solid #565258; color:var(--text); background:var(--inset); overflow-wrap:anywhere; }
+    .status[data-status="blocked"],.status[data-status="failed"],.status[data-status="rejected"] { border-color:var(--spark); color:var(--spark); }
+    .turn { display:block; margin-top:6px; color:var(--muted); font-size:.75rem; overflow-wrap:anywhere; }
+    .record-id { margin-top:9px; color:var(--muted); }
+    .record-id summary { font:.7rem/1.6 var(--mono); }
+    .record-id code { display:block; overflow-wrap:anywhere; white-space:normal; padding:7px 0; color:var(--text); font:.72rem/1.6 var(--mono); }
+    .record-id dl { margin:7px 0 0; }
+    .record-id dt { font:.65rem/1.6 var(--mono); }
+    .record-id dd { margin:0 0 7px; min-width:0; }
+    .directory-note { margin:0; padding:13px 16px; border-top:1px solid var(--line); color:var(--muted); font-size:.72rem; }
+    .feed-panel { margin-top:18px; }
+    .feed { list-style:none; padding:0 16px; margin:0; }
+    .message { border-bottom:1px solid var(--line); padding:16px 0; }
+    .message:last-child { border-bottom:0; }
+    .message-top { display:flex; flex-wrap:wrap; justify-content:space-between; gap:5px 12px; }
+    .route { font:600 .69rem/1.7 var(--mono); color:var(--text); overflow-wrap:anywhere; }
+    .message time { color:var(--muted); font:.65rem/1.7 var(--mono); }
+    .message p { font-size:.83rem; margin:7px 0; overflow-wrap:anywhere; }
+    .message-meta { display:flex; flex-wrap:wrap; align-items:baseline; gap:8px; color:var(--muted); font:.64rem/1.6 var(--mono); }
+    .message-meta .status { margin:0; }
+    .empty { padding:20px 0; color:var(--muted); font-size:.83rem; }
+    .connection { padding:16px; margin-top:18px; border:1px solid var(--line); background:var(--inset); }
+    summary { font-size:.82rem; cursor:pointer; color:var(--text); }
+    .connection p,.connection label { color:var(--muted); font-size:.76rem; }
+    .connection p { max-width:85ch; }
+    .connection form { display:grid; grid-template-columns:minmax(0,1fr); gap:10px; margin-top:14px; }
+    .connection label { display:grid; gap:6px; }
+    input { min-width:0; width:100%; border:1px solid #6c666b; background:var(--panel); color:var(--text); padding:11px; border-radius:0; font-family:var(--mono); font-size:1rem; }
+    button { border:1px solid #8b7b7b; color:var(--text); background:#302627; padding:11px 14px; min-height:44px; font-size:.76rem; border-radius:0; white-space:normal; }
+    button:hover { border-color:var(--spark); } .secondary { background:var(--panel); }
+    .actions { display:flex; flex-wrap:wrap; gap:10px; align-items:end; }
+    .provenance { display:grid; gap:5px; margin:16px 0 0; font:.65rem/1.8 var(--mono); color:var(--muted); }
+    .provenance div { overflow-wrap:anywhere; } .provenance dt,.provenance dd { display:inline; margin:0; }
+    .provenance dt { color:var(--text); }
+    footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:8px 18px; padding-top:24px; color:var(--muted); font:.62rem/1.8 var(--mono); text-transform:uppercase; letter-spacing:.06em; }
+    @media(min-width:600px) { .shell { padding:32px 28px; } .stats { gap:14px; } .stat { padding:18px; } .stat dd { font-size:2rem; } .connection form { grid-template-columns:minmax(0,1fr) auto; align-items:end; } }
+    @media(min-width:960px) { .masthead { grid-template-columns:minmax(0,1fr) minmax(0,280px); gap:32px; } .workspace { grid-template-columns:minmax(0,1.7fr) minmax(290px,1fr); gap:22px; } .feed-panel { margin-top:22px; } .agent-row { padding:18px 0; } }
+    @media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation:none !important; transition:none !important; scroll-behavior:auto !important; } }
   </style>
 </head>
-<body class="min-h-screen p-3 sm:p-4 flex flex-col gap-3">
-
-  <!-- Header: stacks cleanly on mobile -->
-  <header class="panel p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-    <div>
-      <h1 class="text-base sm:text-lg font-bold tracking-wide text-cyan-400 leading-tight">MUSE × GROK<br class="sm:hidden" /> COLLABORATION MONITOR</h1>
-      <p class="text-[11px] sm:text-xs text-gray-400 mt-1">Repo messenger · Agent status · Message flow</p>
+<body>
+  <a class="skip" href="#main">Skip to monitor</a>
+  <div class="shell">
+    <header class="masthead">
+      <div>
+        <p class="eyebrow"><span class="spark" aria-hidden="true"></span> Independent minds. Shared work.</p>
+        <h1>MUSE × GROK</h1>
+        <p class="subtitle">Collaboration monitor</p>
+      </div>
+      <div class="mast-meta"><p>WORKSPACE <strong>THE COLLABORATION FORGE</strong></p><p>TRANSPORT <strong>REPO MAILBOX / V1</strong></p><p>VIEW <strong>READ-ONLY · NO TASK EXECUTION</strong></p></div>
+    </header>
+    <div class="mode-strip" role="status" aria-live="polite" aria-atomic="true">
+      <strong class="mode-tag" id="mode-label">DEMO / MOCK</strong>
+      <p class="mode-copy" id="mode-copy">Illustrative fixtures only. Not connected to real agents or a mailbox.</p>
     </div>
-    <div class="flex flex-wrap gap-2 text-xs sm:text-sm">
-      <div class="panel px-3 py-1.5 flex items-center gap-1.5">
-        <span class="text-gray-500 font-mono">AGENTS</span>
-        <span id="agent-count" class="text-cyan-400 font-bold">0</span>
+    <dl class="stats" aria-label="Displayed data, not live activity">
+      <div class="stat"><dt>Shown agents</dt><dd id="agent-count">—</dd><small id="agent-count-note">Demo roster</small></div>
+      <div class="stat"><dt>Messages</dt><dd id="message-count">—</dd><small id="message-count-note">Illustrative exchanges</small></div>
+      <div class="stat"><dt>Connection</dt><dd id="connection-label" style="font-size:1rem;line-height:1.8">OFF</dd><small id="connection-note">No network in demo</small></div>
+    </dl>
+    <main id="main" tabindex="-1">
+      <div class="workspace">
+        <div>
+          <section class="panel" aria-labelledby="graph-title">
+            <div class="panel-head"><h2 id="graph-title"><span class="section-no">01</span>Message topology</h2><span class="caption">Reference IDs · full names in directory</span></div>
+            <div class="canvas-wrap"><canvas id="monitorCanvas" role="img" aria-describedby="graph-description">The complete agent directory and message list below provide a text alternative.</canvas></div>
+            <p class="graph-note" id="graph-description">The graph is illustrative. No real agent activity is represented.</p>
+            <div class="graph-legend" aria-label="Graph key"><span><i class="key" aria-hidden="true"></i>G / Grok bot</span><span><i class="key key-muse" aria-hidden="true"></i>M / Muse agent</span><span><i class="key key-line" aria-hidden="true"></i>Message relation, not execution</span></div>
+          </section>
+          <section class="panel feed-panel" aria-labelledby="feed-title">
+            <div class="panel-head"><h2 id="feed-title"><span class="section-no">03</span>Message ledger</h2><span class="caption" id="feed-caption">Demo exchanges</span></div>
+            <ol class="feed" id="message-feed"></ol>
+          </section>
+        </div>
+        <section class="panel" aria-labelledby="agents-title">
+          <div class="panel-head"><h2 id="agents-title"><span class="section-no">02</span>Agent directory</h2><span class="caption">Full names · explicit states</span></div>
+          <div class="directory" id="agent-list"></div>
+          <p class="directory-note">A message is not a turn. Receipt is not acceptance. Acceptance is not completion.</p>
+        </section>
       </div>
-      <div class="panel px-3 py-1.5 flex items-center gap-1.5">
-        <span class="text-gray-500 font-mono">LINKS</span>
-        <span id="link-count" class="text-emerald-400 font-bold">0</span>
-      </div>
-      <div class="panel px-3 py-1.5 flex items-center gap-1.5">
-        <span class="text-gray-500 font-mono">POLL</span>
-        <span id="last-poll" class="text-amber-400 font-bold">—</span>
-      </div>
-    </div>
-  </header>
-
-  <!-- Main: stacks on mobile, side-by-side on larger screens -->
-  <main class="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-3 min-h-0">
-    <!-- Canvas area -->
-    <section class="panel relative lg:col-span-3 min-h-[50vh] lg:min-h-0 overflow-hidden">
-      <canvas id="monitorCanvas"></canvas>
-      <div class="absolute bottom-2 left-2 right-2 sm:right-auto bg-gray-900/95 text-[10px] sm:text-xs p-2 rounded border border-gray-700 font-mono space-y-0.5 max-w-[220px]">
-        <div class="flex items-center gap-1.5"><span class="w-2 h-2 bg-cyan-400 rounded-full"></span> Grok</div>
-        <div class="flex items-center gap-1.5"><span class="w-2 h-2 bg-violet-400 rounded-full"></span> Muse</div>
-        <div class="flex items-center gap-1.5"><span class="w-3 h-0.5 bg-emerald-500"></span> Done</div>
-        <div class="flex items-center gap-1.5"><span class="w-3 h-0.5 border-t border-dashed border-amber-500"></span> Pending</div>
-      </div>
-    </section>
-
-    <!-- Side panels -->
-    <section class="flex flex-col gap-3 lg:col-span-1 min-h-0">
-      <div class="panel p-3 flex-1 flex flex-col min-h-[180px]">
-        <h3 class="text-[10px] font-mono font-bold tracking-widest text-gray-400 mb-2 uppercase">Agent Status</h3>
-        <div id="agent-list" class="space-y-1.5 overflow-y-auto flex-1 scrollbar-thin text-xs font-mono"></div>
-      </div>
-      <div class="panel p-3 h-40 flex flex-col">
-        <h3 class="text-[10px] font-mono font-bold tracking-widest text-gray-400 mb-2 uppercase">Message Feed</h3>
-        <div id="message-feed" class="flex-1 overflow-y-auto text-[10px] font-mono text-emerald-400 space-y-0.5 scrollbar-thin"></div>
-      </div>
-    </section>
-  </main>
-
-  <script type="module">
-    /**
-     * Muse × Grok Collaboration Monitor — Mobile-first rewrite
-     * Data contract:
-     *   Agent: { id, name, kind: "grok"|"muse", status: "idle"|"running"|"blocked", lastTurnAt }
-     *   Message: { id, from, to, timestamp, type, status, payloadSummary }
-     * Engineering: modular state, collision-aware labels, responsive layout, no external network in mock mode.
-     */
-
-    class MonitorState {
-      constructor() {
-        this.agents = new Map();
-        this.messages = [];
-        this.links = [];
-      }
-      setAgents(list) {
-        this.agents.clear();
-        list.forEach(a => this.agents.set(a.id, { ...a }));
-      }
-      addMessage(msg) {
-        this.messages.unshift(msg);
-        if (this.messages.length > 40) this.messages.pop();
-        this.rebuildLinks();
-      }
-      rebuildLinks() {
-        const recent = this.messages.filter(m => Date.now() - new Date(m.timestamp).getTime() < 30 * 60 * 1000);
-        const seen = new Set();
-        this.links = [];
-        recent.forEach(m => {
-          const key = [m.from, m.to].sort().join("|");
-          if (!seen.has(key) && this.agents.has(m.from) && this.agents.has(m.to)) {
-            seen.add(key);
-            this.links.push({ from: m.from, to: m.to, strength: m.status === "done" ? 1 : 0.45 });
-          }
-        });
-      }
+      <details class="connection">
+        <summary>Real mailbox adapter — explicit opt-in</summary>
+        <p>Demo makes no network requests. A real connection requires a separately prepared, same-origin JSON snapshot. No tokens, private payloads, or credentials belong in this HTML. Refreshing this view does not sync Git or wake agents.</p>
+        <form id="connection-form">
+          <label for="endpoint">Reviewed same-origin snapshot endpoint<input id="endpoint" name="endpoint" value="./mailbox-snapshot.json" maxlength="220" spellcheck="false" autocomplete="off"></label>
+          <div class="actions"><button type="submit">Connect read-only snapshot</button><button class="secondary" id="demo-button" type="button">Return to demo</button></div>
+        </form>
+        <p>Read-only poll: every 30 seconds after explicit connection. A malformed, failed, or stale snapshot clears the display; demo is never used as a silent fallback. Remote Git freshness remains unknown.</p>
+      </details>
+      <dl class="provenance" aria-label="Data provenance"><div><dt>Source: </dt><dd id="source-label">Illustrative mock fixture; not a repository observation</dd></div><div><dt>Coordinates: </dt><dd id="coordinates-label">Not applicable — illustrative fixture</dd></div><div><dt>Snapshot validated: </dt><dd id="validated-label">Not applicable in demo</dd></div><div><dt>Remote freshness: </dt><dd id="freshness-label">Unknown · no Git fetch evidence</dd></div></dl>
+    </main>
+    <footer><span>Forged for clarity. Not inferred certainty.</span><span id="footer-mode">DEMO DATA · NO LIVE ACTIVITY CLAIM</span></footer>
+    <noscript><p>This monitor requires JavaScript. No data has been loaded; agent activity is unknown.</p></noscript>
+  </div>
+  <script type="module" id="monitor-app">
+/**
+ * Agent {id, name, kind:'grok'|'muse', status, lastTurnAt:ISO-UTC-string|null}
+ * Message {id, from, to, timestamp:ISO-UTC-string, type, status, payloadSummary}
+ * Real snapshot {schemaVersion:1, agents:Agent[], messages:Message[], sourceCommit,
+ *                validatedAt:ISO-UTC-string, remoteFreshness:'unknown'}
+ * Adapter is an explicit opt-in, not a Git client or task runner. See REVIEW.md.
+ */
+const LIMITS = Object.freeze({agents:60, messages:200, bytes:262144, staleMs:90000, pollMs:30000});
+const AGENT_STATES = new Set(['unknown','idle','running','blocked','offline']);
+const MESSAGE_STATES = new Set(['queued','received','validated','accepted','completed','failed','rejected','completion-revoked']);
+const ID = /^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$/;
+function insist(ok, message) { if (!ok) throw new Error(message); }
+function exact(object, fields) {
+  insist(object !== null && typeof object === 'object' && !Array.isArray(object), 'Expected a record');
+  insist(Object.keys(object).length === fields.length && fields.every(field => Object.hasOwn(object,field)), 'Unexpected or missing fields');
+}
+function text(value, max) { insist(typeof value === 'string' && value.trim().length > 0 && value.length <= max && !/[\u0000-\u0008\u000b-\u001f\u007f]/.test(value), 'Invalid text'); return value; }
+function timestamp(value, now = Date.now()) {
+  insist(typeof value === 'string' && /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{3})?Z$/.test(value), 'Invalid UTC timestamp');
+  const n = Date.parse(value);
+  insist(Number.isFinite(n) && new Date(n).toISOString() === (value.includes('.') ? value : value.replace(/Z$/, '.000Z')) && n <= now + 30000, 'Invalid or future timestamp');
+  return n;
+}
+function parseStrictJSON(raw) {
+  insist(typeof raw === 'string' && new TextEncoder().encode(raw).length <= LIMITS.bytes, 'Snapshot too large');
+  const parsed = JSON.parse(raw);
+  const tokens = raw.match(/"(?:\\[\s\S]|[^"\\])*"|[{}\[\]:,]|true|false|null|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?/g) || [];
+  const stack = []; insist(tokens.length <= 24000, 'Too many tokens');
+  for (const token of tokens) {
+    if (token === '{' || token === '[') { stack.push({object:token === '{', keys:new Set(), key:true}); insist(stack.length <= 12, 'Too deeply nested'); }
+    else if (token === '}' || token === ']') stack.pop();
+    else if (token === ',') { if (stack.at(-1)?.object) stack.at(-1).key = true; }
+    else if (token.startsWith('"') && stack.at(-1)?.object && stack.at(-1).key) {
+      const key = JSON.parse(token), frame = stack.at(-1); insist(!frame.keys.has(key), 'Duplicate JSON key'); frame.keys.add(key); frame.key = false;
     }
-
-    const state = new MonitorState();
-
-    function loadMock() {
-      state.setAgents([
-        { id: "commander", name: "Commander", kind: "grok", status: "idle", lastTurnAt: Date.now() - 120000 },
-        { id: "forge-lab", name: "Forge Lab", kind: "grok", status: "idle", lastTurnAt: Date.now() - 300000 },
-        { id: "auditor", name: "Auditor", kind: "grok", status: "idle", lastTurnAt: Date.now() - 180000 },
-        { id: "chimera", name: "Chimera", kind: "grok", status: "idle", lastTurnAt: Date.now() - 600000 },
-        { id: "muse-spark", name: "Muse Spark", kind: "muse", status: "idle", lastTurnAt: Date.now() - 90000 },
-        { id: "muse-junior", name: "Muse Junior", kind: "muse", status: "blocked", lastTurnAt: Date.now() - 2400000 },
-      ]);
-      const now = Date.now();
-      [
-        { id: "m1", from: "commander", to: "forge-lab", timestamp: new Date(now - 600000).toISOString(), type: "request", status: "done", payloadSummary: "Draft page (web hero)" },
-        { id: "m2", from: "forge-lab", to: "commander", timestamp: new Date(now - 480000).toISOString(), type: "response", status: "done", payloadSummary: "v2 draft ready" },
-        { id: "m3", from: "commander", to: "auditor", timestamp: new Date(now - 420000).toISOString(), type: "request", status: "done", payloadSummary: "Claims recheck" },
-        { id: "m4", from: "commander", to: "muse-spark", timestamp: new Date(now - 180000).toISOString(), type: "request", status: "pending", payloadSummary: "Verify web hero" },
-        { id: "m5", from: "chimera", to: "commander", timestamp: new Date(now - 90000).toISOString(), type: "support", status: "acked", payloadSummary: "Protocol review" },
-      ].forEach(m => state.addMessage(m));
-    }
-
-    const canvas = document.getElementById("monitorCanvas");
-    const ctx = canvas.getContext("2d");
-
-    function resize() {
-      const parent = canvas.parentElement;
-      const dpr = window.devicePixelRatio || 1;
-      canvas.width = parent.clientWidth * dpr;
-      canvas.height = parent.clientHeight * dpr;
-      canvas.style.width = parent.clientWidth + "px";
-      canvas.style.height = parent.clientHeight + "px";
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      layoutAgents();
-    }
-
-    function layoutAgents() {
-      const agents = [...state.agents.values()];
-      const w = canvas.clientWidth;
-      const h = canvas.clientHeight;
-      const cols = Math.max(2, Math.ceil(Math.sqrt(agents.length * (w / Math.max(h, 200)))));
-      const rows = Math.ceil(agents.length / cols);
-      const padX = w / (cols + 0.5);
-      const padY = h / (rows + 0.8);
-      agents.forEach((a, i) => {
-        const col = i % cols;
-        const row = Math.floor(i / cols);
-        a.x = padX * (col + 0.75);
-        a.y = padY * (row + 0.9);
-      });
-    }
-
-    function draw() {
-      const w = canvas.clientWidth;
-      const h = canvas.clientHeight;
-      ctx.clearRect(0, 0, w, h);
-
-      // Grid
-      ctx.strokeStyle = "rgba(31,41,55,0.3)";
-      ctx.lineWidth = 1;
-      const grid = 40;
-      for (let x = 0; x < w; x += grid) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); }
-      for (let y = 0; y < h; y += grid) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
-
-      // Links
-      state.links.forEach(link => {
-        const a = state.agents.get(link.from);
-        const b = state.agents.get(link.to);
-        if (!a || !b) return;
-        ctx.beginPath();
-        ctx.moveTo(a.x, a.y);
-        ctx.lineTo(b.x, b.y);
-        if (link.strength > 0.6) {
-          ctx.strokeStyle = "rgba(16,185,129,0.75)";
-          ctx.setLineDash([]);
-        } else {
-          ctx.strokeStyle = "rgba(245,158,11,0.65)";
-          ctx.setLineDash([4, 4]);
-        }
-        ctx.lineWidth = 2;
-        ctx.stroke();
-        ctx.setLineDash([]);
-      });
-
-      // Agents + collision-aware short labels
-      state.agents.forEach(agent => {
-        const color = agent.kind === "muse" ? "#a78bfa" : "#22d3ee";
-        const statusColor = agent.status === "blocked" ? "#ef4444" : agent.status === "running" ? "#f59e0b" : color;
-
-        ctx.beginPath();
-        ctx.arc(agent.x, agent.y, 14, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(255,255,255,0.05)";
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.arc(agent.x, agent.y, 5, 0, Math.PI * 2);
-        ctx.fillStyle = statusColor;
-        ctx.fill();
-
-        // Short name above, status below — sized for mobile
-        ctx.fillStyle = "rgba(229,231,235,0.95)";
-        ctx.font = "bold 11px ui-monospace, monospace";
-        ctx.textAlign = "center";
-        ctx.fillText(agent.name, agent.x, agent.y - 20);
-        ctx.fillStyle = "rgba(156,163,175,0.85)";
-        ctx.font = "9px ui-monospace, monospace";
-        ctx.fillText(agent.status.toUpperCase(), agent.x, agent.y + 26);
-      });
-
-      document.getElementById("agent-count").textContent = state.agents.size;
-      document.getElementById("link-count").textContent = state.links.length;
-      document.getElementById("last-poll").textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-
-      renderAgentList();
-      renderMessageFeed();
-      requestAnimationFrame(draw);
-    }
-
-    function renderAgentList() {
-      const el = document.getElementById("agent-list");
-      el.innerHTML = "";
-      [...state.agents.values()].forEach(a => {
-        const row = document.createElement("div");
-        row.className = "flex justify-between items-center px-2 py-1.5 rounded bg-gray-950 border border-gray-800/70";
-        const kindColor = a.kind === "muse" ? "text-violet-400" : "text-cyan-400";
-        const statusColor = a.status === "blocked" ? "text-red-400" : a.status === "running" ? "text-amber-400" : "text-emerald-400";
-        row.innerHTML = `<span class="${kindColor} truncate">${a.name}</span><span class="${statusColor}">${a.status}</span>`;
-        el.appendChild(row);
-      });
-    }
-
-    function renderMessageFeed() {
-      const el = document.getElementById("message-feed");
-      el.innerHTML = "";
-      state.messages.slice(0, 15).forEach(m => {
-        const div = document.createElement("div");
-        const time = new Date(m.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-        div.textContent = `[${time}] ${m.from}→${m.to}: ${m.payloadSummary}`;
-        el.appendChild(div);
-      });
-    }
-
-    window.addEventListener("resize", resize);
-    loadMock();
-    resize();
-    draw();
-
-    // Real messenger poll hook (replace loadMock when ready):
-    // async function pollMessenger() { ... }
-    // setInterval(pollMessenger, 15000);
+  }
+  return parsed;
+}
+function validateSnapshot(raw, {mode='real', now=Date.now()} = {}) {
+  exact(raw, ['schemaVersion','agents','messages','sourceCommit','validatedAt','remoteFreshness']);
+  insist(raw.schemaVersion === 1, 'Unsupported schema');
+  insist(Array.isArray(raw.agents) && raw.agents.length <= LIMITS.agents && Array.isArray(raw.messages) && raw.messages.length <= LIMITS.messages, 'Record limits exceeded');
+  insist(raw.remoteFreshness === 'unknown', 'Unsupported freshness assertion');
+  if (mode === 'real') {
+    insist(typeof raw.sourceCommit === 'string' && /^[a-f0-9]{40}$/.test(raw.sourceCommit), 'Missing source commit');
+    const age = now - timestamp(raw.validatedAt, now); insist(age <= LIMITS.staleMs, 'Snapshot stale');
+  } else { insist(mode === 'demo' && raw.sourceCommit === null && raw.validatedAt === null, 'Demo provenance invalid'); }
+  const ids = new Set(), messageIds = new Set();
+  const agents = raw.agents.map(a => {
+    exact(a, ['id','name','kind','status','lastTurnAt']);
+    insist(typeof a.id === 'string' && ID.test(a.id) && !ids.has(a.id), 'Invalid/duplicate agent ID'); ids.add(a.id);
+    text(a.name, 180); insist(['grok','muse'].includes(a.kind) && AGENT_STATES.has(a.status), 'Invalid agent kind/state');
+    if (a.lastTurnAt !== null) timestamp(a.lastTurnAt, now);
+    return Object.freeze({...a});
+  });
+  const messages = raw.messages.map(m => {
+    exact(m, ['id','from','to','timestamp','type','status','payloadSummary']);
+    insist(typeof m.id === 'string' && ID.test(m.id) && !messageIds.has(m.id), 'Invalid/duplicate message ID'); messageIds.add(m.id);
+    insist(ids.has(m.from) && ids.has(m.to) && m.from !== m.to, 'Unknown/self message endpoint');
+    timestamp(m.timestamp, now); insist(['request','response'].includes(m.type) && MESSAGE_STATES.has(m.status), 'Invalid message type/state'); text(m.payloadSummary, 500);
+    return Object.freeze({...m});
+  }).sort((a,b) => Date.parse(b.timestamp)-Date.parse(a.timestamp) || a.id.localeCompare(b.id));
+  return Object.freeze({...raw, agents:Object.freeze(agents), messages:Object.freeze(messages)});
+}
+function loadMock() {
+  // Illustrative names/states, NOT verified endpoints, turns or current exchanges.
+  const agents = [
+    ['commander','Commander','grok','idle'], ['forge-lab','Forge Lab','grok','running'],
+    ['auditor','Independent Business Auditor','grok','idle'], ['chimera','Project Chimera','grok','idle'],
+    ['muse-spark','Muse Spark','muse','unknown'], ['muse-junior','Muse Junior','muse','blocked']
+  ].map(([id,name,kind,status]) => ({id,name,kind,status,lastTurnAt:null}));
+  const messages = [
+    ['demo-1','commander','forge-lab','request','accepted','Example: prepare a local page handoff.'],
+    ['demo-2','forge-lab','commander','response','validated','Example: source-pinned handoff returned for review.'],
+    ['demo-3','commander','auditor','request','queued','Example: independent claims review requested.'],
+    ['demo-4','commander','muse-spark','request','queued','Example: visual style clarification requested.'],
+    ['demo-5','chimera','commander','response','received','Example: protocol review received, not yet accepted.']
+  ].map(([id,from,to,type,status,payloadSummary],i) => ({id,from,to,timestamp:`2026-11-07T18:0${i}:00.000Z`,type,status,payloadSummary}));
+  return {schemaVersion:1,agents,messages,sourceCommit:null,validatedAt:null,remoteFreshness:'unknown'};
+}
+function references(agents) { return new Map(agents.map((a,i) => [a.id, `${a.kind === 'muse' ? 'M' : 'G'}${String(i+1).padStart(2,'0')}`])); }
+function layoutNodes(agents, width) {
+  insist(Number.isFinite(width) && width >= 144, 'Graph width too small');
+  const cols = Math.max(1, Math.min(agents.length || 1, width < 420 ? 2 : width < 720 ? 3 : 4, Math.floor((width-32)/112)));
+  const rows = Math.max(1, Math.ceil(agents.length/cols)), cell = (width-32)/cols;
+  const refs = references(agents);
+  return {height:rows*112+48, nodes:agents.map((a,i) => ({...a, ref:refs.get(a.id), x:16+cell*(i%cols+.5), y:24+112*(Math.floor(i/cols)+.5), w:84,h:64}))};
+}
+function endpointURL(value, base) {
+  insist(typeof value === 'string' && value.length <= 220 && value.trim() === value && value.length > 0, 'Invalid endpoint');
+  const url = new URL(value, base), origin = new URL(base);
+  insist(['http:','https:'].includes(url.protocol) && url.origin === origin.origin && !url.username && !url.password && !url.search && !url.hash, 'Only credential-free same-origin endpoints');
+  insist(url.pathname.endsWith('.json') || url.pathname.endsWith('/api/mailbox-snapshot'), 'Expected JSON snapshot endpoint');
+  return url.href;
+}
+async function readBoundedJSON(response) {
+  insist(response.ok && (response.headers.get('content-type') || '').split(';')[0].trim() === 'application/json', 'Snapshot unavailable or not JSON');
+  const declared = response.headers.get('content-length'); if (declared !== null) insist(/^\d+$/.test(declared) && Number(declared) <= LIMITS.bytes, 'Snapshot too large');
+  insist(response.body?.getReader, 'Streaming response required');
+  const reader = response.body.getReader(), decoder = new TextDecoder('utf-8', {fatal:true}); let size=0, raw='';
+  try { while (true) { const {value,done}=await reader.read(); if (done) break; size+=value.byteLength; insist(size<=LIMITS.bytes, 'Snapshot too large'); raw+=decoder.decode(value,{stream:true}); } raw+=decoder.decode(); }
+  catch(error) { await reader.cancel().catch(()=>{}); throw error; } finally { reader.releaseLock(); }
+  return parseStrictJSON(raw);
+}
+class MonitorState {
+  constructor(onChange=()=>{}) { this.onChange=onChange; this.snapshot=null; this.mode='demo'; this.phase='unknown'; this.error=''; }
+  set(snapshot, mode, now=Date.now()) { let checked; try { checked=validateSnapshot(snapshot,{mode,now}); } catch(error) { this.clear('error','Snapshot rejected. No current agent state is displayed.'); throw error; } this.snapshot=checked; this.mode=mode; this.phase=mode==='demo'?'demo':'ready'; this.error=''; this.onChange(); }
+  clear(phase, message, mode='real') { this.snapshot=null; this.mode=mode; this.phase=phase; this.error=message; this.onChange(); }
+  checkFreshness(now=Date.now()) { if(this.mode==='real' && this.snapshot && now-Date.parse(this.snapshot.validatedAt)>LIMITS.staleMs) this.clear('stale','Snapshot expired. No current agent state is displayed.'); }
+}
+class MailboxPoller {
+  constructor(state, {fetcher=(...args)=>fetch(...args), timers=globalThis, now=()=>Date.now()}={}) { this.state=state; this.fetcher=fetcher; this.timers=timers; this.now=now; this.epoch=0; this.timer=null; this.freshnessTimer=null; this.controller=null; this.endpoint=null; }
+  stop() { this.epoch++; this.controller?.abort(); this.timers.clearTimeout(this.timer); this.timers.clearInterval(this.freshnessTimer); this.timer=null; this.freshnessTimer=null; }
+  demo() { this.stop(); this.endpoint=null; this.state.set(loadMock(),'demo'); }
+  suspend() { this.stop(); if(this.state.mode==='real') this.state.clear('unknown','Page suspended. Snapshot must be revalidated before display.'); }
+  resume(base) { if(this.state.mode!=='real') return; if(this.endpoint) this.connect(this.endpoint,base); else this.state.clear('unknown','No reviewed endpoint is available.'); }
+  connect(value, base) { this.stop(); this.endpoint=null; this.state.clear('loading','Waiting for a validated snapshot.'); let url;
+    try { url=endpointURL(value,base); } catch(error) { this.state.clear('error',error.message); return; }
+    this.endpoint=url; const epoch=this.epoch; this.freshnessTimer=this.timers.setInterval(()=>this.state.checkFreshness(this.now()),1000); void this.poll(url,epoch);
+  }
+  async poll(url, epoch) { if(epoch!==this.epoch) return;
+    this.controller=new AbortController(); const controller=this.controller;
+    const timeout=this.timers.setTimeout(()=>controller.abort(),8000);
+    try { const response=await this.fetcher(url,{signal:controller.signal,credentials:'omit',cache:'no-store',redirect:'error',referrerPolicy:'no-referrer'}); const raw=await readBoundedJSON(response);
+      if(epoch!==this.epoch) return; this.state.set(raw,'real',this.now());
+    } catch(error) { if(epoch===this.epoch) this.state.clear('error','Snapshot rejected or unavailable. No agent state is displayed.'); }
+    finally { this.timers.clearTimeout(timeout); if(epoch===this.epoch) this.timer=this.timers.setTimeout(()=>void this.poll(url,epoch),LIMITS.pollMs); }
+  }
+}
+function element(tag, className, value) { const node=document.createElement(tag); if(className) node.className=className; if(value!==undefined) node.textContent=value; return node; }
+function localTime(iso) { return new Date(iso).toLocaleString('en-US',{timeZone:'America/Chicago',month:'short',day:'numeric',hour:'numeric',minute:'2-digit',timeZoneName:'short'}); }
+class MonitorView {
+  constructor(state) { this.state=state; this.canvas=document.getElementById('monitorCanvas'); this.context=this.canvas.getContext('2d'); this.resize=()=>this.draw();
+    this.observer=typeof ResizeObserver==='function'?new ResizeObserver(this.resize):null; this.observer?.observe(this.canvas.parentElement); window.addEventListener('resize',this.resize); }
+  set(id,value) { document.getElementById(id).textContent=value; }
+  render() {
+    const {snapshot,mode,phase,error}=this.state, demo=mode==='demo', agents=snapshot?.agents || [], messages=snapshot?.messages || [], refs=references(agents), byId=new Map(agents.map(a=>[a.id,a]));
+    this.set('mode-label',demo?'DEMO / MOCK':phase==='ready'?'SNAPSHOT / REPORTED':phase==='stale'?'STALE / NO DATA':phase==='loading'?'CONNECTING / UNKNOWN':'ERROR / NO DATA');
+    this.set('mode-copy',demo?'Illustrative fixtures only. Not connected to real agents or a mailbox.':snapshot?'Validated snapshot shape. Agent states are source-reported, not proof of live execution.':error);
+    this.set('agent-count',snapshot?String(agents.length):'—'); this.set('message-count',snapshot?String(messages.length):'—'); this.set('agent-count-note',demo?'Demo roster':'Reported roster, not live agents'); this.set('message-count-note',demo?'Illustrative exchanges':'Snapshot message records');
+    this.set('connection-label',demo?'OFF':phase==='ready'?'SNAPSHOT':phase.toUpperCase()); this.set('connection-note',demo?'No network in demo':snapshot?'Read-only · 30 s refresh':'No current data');
+    this.set('source-label',demo?'Illustrative mock fixture; not a repository observation':snapshot?`Reported commit ${snapshot.sourceCommit}`:'Unknown — no valid snapshot');
+    this.set('coordinates-label',demo?'Not applicable — illustrative fixture':'Unavailable / unverified. Repository and mailbox path are not supplied.');
+    this.set('validated-label',demo?'Not applicable in demo':snapshot?localTime(snapshot.validatedAt):'Unknown'); this.set('freshness-label','Unknown · no Git fetch evidence');
+    this.set('feed-caption',demo?'Demo exchanges':'Source-reported message states'); this.set('footer-mode',demo?'DEMO DATA · NO LIVE ACTIVITY CLAIM':'READ-ONLY SNAPSHOT · NOT A TASK RUNNER');
+    const directory=document.getElementById('agent-list'), feed=document.getElementById('message-feed'); const rows=document.createDocumentFragment(), items=document.createDocumentFragment();
+    for(const a of agents) { const row=element('article','agent-row'), ref=element('span','ref',refs.get(a.id)); ref.dataset.kind=a.kind;
+      const content=element('div'), name=element('h3','agent-name',a.name), kind=element('div','agent-kind',a.kind==='grok'?'Grok bot':'Muse agent');
+      const status=element('span','status',`${demo?'Demo':'Reported'} · ${a.status}`); status.dataset.status=a.status;
+      const turn=element('span','turn',a.lastTurnAt===null?'Actual turn time: unknown':`Source turn: ${localTime(a.lastTurnAt)}`);
+      const identity=element('details','record-id'); identity.append(element('summary','','Routing ID'),element('code','',a.id));
+      content.append(name,kind,status,turn,identity); row.append(ref,content); rows.append(row); }
+    for(const message of messages) { const item=element('li','message'), top=element('div','message-top');
+      const route=element('span','route',`${refs.get(message.from)} ${byId.get(message.from).name} → ${refs.get(message.to)} ${byId.get(message.to).name}`), time=element('time','',`${demo?'Demo · ':''}${localTime(message.timestamp)}`); time.dateTime=message.timestamp;
+      top.append(route,time); const summary=element('p','',message.payloadSummary), meta=element('div','message-meta'), status=element('span','status',`${demo?'Demo':'Reported'} · ${message.status}`); status.dataset.status=message.status;
+      const identity=element('details','record-id'), identifiers=element('dl'); identity.append(element('summary','','Message / endpoint IDs'));
+      for(const [label,value] of [['Message ID',message.id],['From',message.from],['To',message.to]]) { const valueNode=element('dd'); valueNode.append(element('code','',value)); identifiers.append(element('dt','',label),valueNode); } identity.append(identifiers);
+      meta.append(element('span','',message.type),status); item.append(top,summary,meta,identity); items.append(item); }
+    if(!agents.length) rows.append(element('p','empty',snapshot?'No agent records in this snapshot.':'Agent state is unknown. No previous or mock state is retained.'));
+    if(!messages.length) items.append(element('li','empty',snapshot?'No message records in this snapshot.':'Messages unavailable. No previous or mock records are shown.'));
+    directory.replaceChildren(rows); feed.replaceChildren(items);
+    this.set('graph-description',snapshot?`${demo?'Illustrative demo':'Source-reported snapshot'}: ${agents.length} agents, ${messages.length} messages. Reference IDs match the full directory. Relations do not prove execution.`:'No valid snapshot. Agent topology is unknown.');
+    this.draw();
+  }
+  draw() {
+    const width=this.canvas.parentElement.clientWidth; if(width<144 || !this.context) return;
+    const agents=this.state.snapshot?.agents || [], messages=this.state.snapshot?.messages || [], layout=layoutNodes(agents,width), dpr=Math.min(4,Math.max(1,window.devicePixelRatio||1)), ctx=this.context;
+    const pixelWidth=Math.round(width*dpr), pixelHeight=Math.round(layout.height*dpr);
+    if(this.canvas.width!==pixelWidth) this.canvas.width=pixelWidth; if(this.canvas.height!==pixelHeight) this.canvas.height=pixelHeight;
+    if(this.canvas.style.height!==`${layout.height}px`) this.canvas.style.height=`${layout.height}px`;
+    ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,width,layout.height);
+    ctx.strokeStyle='#28282b'; ctx.lineWidth=1; for(let x=16;x<width;x+=24) { ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,layout.height);ctx.stroke(); }
+    const byId=new Map(layout.nodes.map(n=>[n.id,n])); const seen=new Set();
+    for(const m of messages) { const key=[m.from,m.to].sort().join('|'); if(seen.has(key)) continue; seen.add(key); const a=byId.get(m.from),b=byId.get(m.to); if(!a||!b) continue;
+      ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.strokeStyle='#82635f';ctx.lineWidth=1.25;ctx.setLineDash(m.status==='completed'?[]:[4,5]);ctx.stroke();ctx.setLineDash([]); }
+    for(const n of layout.nodes) { const x=n.x-n.w/2,y=n.y-n.h/2;ctx.beginPath();
+      if(n.kind==='muse') { ctx.moveTo(x+10,y);ctx.lineTo(x+n.w,y);ctx.lineTo(x+n.w,y+n.h-10);ctx.lineTo(x+n.w-10,y+n.h);ctx.lineTo(x,y+n.h);ctx.lineTo(x,y+10);ctx.closePath(); } else ctx.rect(x,y,n.w,n.h);
+      ctx.fillStyle='#222225';ctx.fill();ctx.strokeStyle=n.status==='blocked'?'#ff7768':'#777178';ctx.lineWidth=1;ctx.stroke();
+      ctx.fillStyle='#f4f0eb';ctx.font='600 14px ui-monospace,monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(n.ref,n.x,n.y-7);
+      ctx.fillStyle='#b3b1b2';ctx.font='9px ui-monospace,monospace';ctx.fillText(n.kind.toUpperCase(),n.x,n.y+14);
+      ctx.fillStyle='#7a7478';ctx.fillRect(x+5,y+5,2,2);ctx.fillRect(x+n.w-7,y+n.h-7,2,2); }
+    if(!agents.length) { ctx.fillStyle='#b3b1b2';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='13px system-ui,sans-serif';ctx.fillText('No current topology',width/2,layout.height/2); }
+  }
+}
+function bootstrap() {
+  const state=new MonitorState(), view=new MonitorView(state), poller=new MailboxPoller(state); state.onChange=()=>view.render();
+  document.getElementById('connection-form').addEventListener('submit',event=>{event.preventDefault();poller.connect(document.getElementById('endpoint').value,location.href);});
+  document.getElementById('demo-button').addEventListener('click',()=>poller.demo()); poller.demo();
+  window.addEventListener('pagehide',()=>poller.suspend());
+  window.addEventListener('pageshow',()=>poller.resume(location.href));
+}
+export {LIMITS, parseStrictJSON, validateSnapshot, loadMock, references, layoutNodes, endpointURL, readBoundedJSON, MonitorState, MailboxPoller};
+if(typeof document!=='undefined') bootstrap();
   </script>
 </body>
 </html>
