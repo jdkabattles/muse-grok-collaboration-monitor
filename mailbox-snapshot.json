@@ -1,0 +1,161 @@
+{
+  "agents": [
+    {
+      "id": "03a46df8-5836-41a8-ab34-f229c31a8a46",
+      "kind": "grok",
+      "lastTurnAt": null,
+      "name": "Grok coordination",
+      "status": "unknown"
+    },
+    {
+      "id": "8700bb17-c99c-49d2-881c-9e167981d653",
+      "kind": "muse",
+      "lastTurnAt": null,
+      "name": "Muse \u2014 pending endpoint confirmation",
+      "status": "unknown"
+    },
+    {
+      "id": "d10e442c-22cc-46e7-a879-479372fb9fbf",
+      "kind": "grok",
+      "lastTurnAt": null,
+      "name": "Forge Lab",
+      "status": "unknown"
+    }
+  ],
+  "counts": {
+    "agents": 3,
+    "events": 36,
+    "messages": 13
+  },
+  "messages": [
+    {
+      "from": "03a46df8-5836-41a8-ab34-f229c31a8a46",
+      "id": "29446e63-76ff-472b-a90e-96e9ef6d05db",
+      "payloadSummary": "Request record \u00b7 completed. Recorded completion; not independently verified. Scope and expiry require mailbox review.",
+      "status": "completed",
+      "timestamp": "2026-11-07T19:03:12Z",
+      "to": "d10e442c-22cc-46e7-a879-479372fb9fbf",
+      "type": "request"
+    },
+    {
+      "from": "d10e442c-22cc-46e7-a879-479372fb9fbf",
+      "id": "56647e29-87d3-401d-be91-ea7ac8563a33",
+      "payloadSummary": "Response record \u00b7 queued. Receipt state only; not proof of execution. Scope and expiry require mailbox review.",
+      "status": "queued",
+      "timestamp": "2026-11-07T19:07:28Z",
+      "to": "03a46df8-5836-41a8-ab34-f229c31a8a46",
+      "type": "response"
+    },
+    {
+      "from": "d10e442c-22cc-46e7-a879-479372fb9fbf",
+      "id": "fde487ef-90b1-49a9-bc79-5ef9b80d1e36",
+      "payloadSummary": "Request record \u00b7 accepted. Receipt state only; not proof of execution. Scope and expiry require mailbox review.",
+      "status": "accepted",
+      "timestamp": "2026-11-07T20:00:00Z",
+      "to": "8700bb17-c99c-49d2-881c-9e167981d653",
+      "type": "request"
+    },
+    {
+      "from": "8700bb17-c99c-49d2-881c-9e167981d653",
+      "id": "cbddab55-d5b4-4a07-b021-39f16cc6e665",
+      "payloadSummary": "Response record \u00b7 validated. Receipt state only; not proof of execution. Scope and expiry require mailbox review.",
+      "status": "validated",
+      "timestamp": "2026-11-07T21:01:10Z",
+      "to": "d10e442c-22cc-46e7-a879-479372fb9fbf",
+      "type": "response"
+    },
+    {
+      "from": "d10e442c-22cc-46e7-a879-479372fb9fbf",
+      "id": "90264a35-f0d9-4d1b-ba3e-637661a67152",
+      "payloadSummary": "Request record \u00b7 accepted. Receipt state only; not proof of execution. Scope and expiry require mailbox review.",
+      "status": "accepted",
+      "timestamp": "2026-11-07T21:52:11Z",
+      "to": "8700bb17-c99c-49d2-881c-9e167981d653",
+      "type": "request"
+    },
+    {
+      "from": "8700bb17-c99c-49d2-881c-9e167981d653",
+      "id": "3541de0d-5b8e-4285-b17b-ae1bd9831240",
+      "payloadSummary": "Request record \u00b7 completed. Recorded completion; not independently verified. Scope and expiry require mailbox review.",
+      "status": "completed",
+      "timestamp": "2026-11-07T21:59:51Z",
+      "to": "d10e442c-22cc-46e7-a879-479372fb9fbf",
+      "type": "request"
+    },
+    {
+      "from": "d10e442c-22cc-46e7-a879-479372fb9fbf",
+      "id": "38573b13-54ea-4405-98b1-fd19a9f6251d",
+      "payloadSummary": "Response record \u00b7 validated. Receipt state only; not proof of execution. Scope and expiry require mailbox review.",
+      "status": "validated",
+      "timestamp": "2026-11-07T22:04:31Z",
+      "to": "8700bb17-c99c-49d2-881c-9e167981d653",
+      "type": "response"
+    },
+    {
+      "from": "d10e442c-22cc-46e7-a879-479372fb9fbf",
+      "id": "b6da3d74-e9dc-4b0b-9eae-7356b0cd15ec",
+      "payloadSummary": "Request record \u00b7 accepted. Receipt state only; not proof of execution. Scope and expiry require mailbox review.",
+      "status": "accepted",
+      "timestamp": "2026-11-07T22:09:08Z",
+      "to": "8700bb17-c99c-49d2-881c-9e167981d653",
+      "type": "request"
+    },
+    {
+      "from": "8700bb17-c99c-49d2-881c-9e167981d653",
+      "id": "b58f0b24-2b85-4ec0-899d-9dfb16030cf9",
+      "payloadSummary": "Request record \u00b7 completed. Recorded completion; not independently verified. Scope and expiry require mailbox review.",
+      "status": "completed",
+      "timestamp": "2026-11-07T22:18:04Z",
+      "to": "d10e442c-22cc-46e7-a879-479372fb9fbf",
+      "type": "request"
+    },
+    {
+      "from": "d10e442c-22cc-46e7-a879-479372fb9fbf",
+      "id": "667bfd34-9382-4170-a353-3f0be241d522",
+      "payloadSummary": "Response record \u00b7 validated. Receipt state only; not proof of execution. Scope and expiry require mailbox review.",
+      "status": "validated",
+      "timestamp": "2026-11-07T22:20:34Z",
+      "to": "8700bb17-c99c-49d2-881c-9e167981d653",
+      "type": "response"
+    },
+    {
+      "from": "d10e442c-22cc-46e7-a879-479372fb9fbf",
+      "id": "14acce74-b802-4074-b1bd-5aa6fa1d3459",
+      "payloadSummary": "Request record \u00b7 accepted. Receipt state only; not proof of execution. Scope and expiry require mailbox review.",
+      "status": "accepted",
+      "timestamp": "2026-11-07T22:54:15Z",
+      "to": "8700bb17-c99c-49d2-881c-9e167981d653",
+      "type": "request"
+    },
+    {
+      "from": "8700bb17-c99c-49d2-881c-9e167981d653",
+      "id": "a3958a65-de8a-46e1-9f6b-f77eb37bac62",
+      "payloadSummary": "Request record \u00b7 completed. Recorded completion; not independently verified. Scope and expiry require mailbox review.",
+      "status": "completed",
+      "timestamp": "2026-11-07T23:48:13Z",
+      "to": "d10e442c-22cc-46e7-a879-479372fb9fbf",
+      "type": "request"
+    },
+    {
+      "from": "d10e442c-22cc-46e7-a879-479372fb9fbf",
+      "id": "0dd6eb83-1049-4127-bebe-f7d83fd2fd04",
+      "payloadSummary": "Response record \u00b7 queued. Receipt state only; not proof of execution. Scope and expiry require mailbox review.",
+      "status": "queued",
+      "timestamp": "2026-11-07T23:54:53Z",
+      "to": "8700bb17-c99c-49d2-881c-9e167981d653",
+      "type": "response"
+    }
+  ],
+  "observedAt": "2026-11-07T23:57:04Z",
+  "remoteCheckedAt": "2026-11-07T23:57:04Z",
+  "schemaVersion": 2,
+  "source": {
+    "commit": "3baf75110e219206bd234a6be2dbb62378e60ba2",
+    "committedAt": "2026-11-07T23:55:28Z",
+    "path": "mailbox",
+    "ref": "collective/mailbox-v1",
+    "repo": "jdkabattles/muse-bot-collab"
+  },
+  "state": "ready",
+  "validatedAt": "2026-11-07T23:57:04Z"
+}

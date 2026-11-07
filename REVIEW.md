@@ -1,99 +1,81 @@
-# Mobile collaboration monitor — implementation and verification notes
+# Collaboration monitor — review status
 
-Source baseline main: `35aadd26e4e81ed3d760fcd07b5ba05735422f63`.
-Original index SHA-256: `9c4404a2aeaf910d4e5c7198d11b2a401c4f37ac1e193dd80e0bd5aa1298cf19`.
-The original remains inspectable as `index.html` at the source baseline commit;
-no machine-local backup path is required to inspect the published source history.
+## Already-published mobile baseline
 
-## Scope / visual direction
-
-Single-file HTML rewrite; local Node tests; no dependencies, CDN, fonts, trackers,
-remote resources in demo, product site changes, or messenger writes. README now
-explicitly identifies the dashboard as demo rather than live telemetry.
-Dark steel plates, restrained rivets, high-contrast type and red spark accent only.
-No gradients, stock imagery, additional logos, fabricated product claims or anvil.
-Palette/hierarchy adapted from the Mandate Check IMAGE brief, not represented as a
-dashboard specification. Source: project-chimera `5af11a3b4463b0dff8f60143f8fe6706598c6aa3`,
-`visuals/forgingstack/STYLE-BRIEF.md`, blob `9c4717ef88792059cb17a43d54ea4404a8adaa78`.
-Reviewed brief byte SHA-256: `6b8d179c7ea3351c615786c83eb5a3863f9d87db5d6a40462264e31b183f96ef`.
-Muse's separate review response is pending; no invented Muse endorsement.
-
-## What changed
-
-- Mobile-first natural document scrolling; stacked header and panels, minmax(0,1fr)
-  grids, wrapping names/statuses, no truncation or global overflow-hiding workaround.
-- Canvas uses deterministic nonoverlapping cells, short reference IDs, filled
-  label plates and a complete accessible DOM directory. Grok/Muse also differ by
-  shape/labels, not color alone. DPR backing store (cap 4) + ResizeObserver/window
-  resize. No animation loop, no per-frame DOM rebuild, no motion dependency.
-- Clear DEMO/MOCK labels, every agent/message state explicitly marked demo. Actual
-  turn times null, no fabricated last-poll clock or inferred online/consumer state.
-- Typed bounded records, duplicate IDs/JSON keys rejected, inert textContent DOM,
-  atomic validated snapshots and fail-closed error/stale states that remove data.
-- Opt-in same-origin read-only snapshot loader: no fetch until Connect is pressed.
-  30-second interval, 8-second timeout, no credentials/referrer/redirects, JSON media
-  type/256-KiB streamed cap, 90-second snapshot expiry, source commit provenance.
-  Remote Git freshness always unknown; UI refresh is not Git sync or agent wake.
-
-## Real snapshot contract / poll hook
-
-Existing Agent fields retained: `{id,name,kind:'grok'|'muse',status,lastTurnAt}`.
-Existing Message fields retained: `{id,from,to,timestamp,type,status,payloadSummary}`.
-IDs are bounded ASCII routing labels, not authenticated identities. Agent states:
-unknown/idle/running/blocked/offline. Message states: queued/received/validated/
-accepted/completed/failed/rejected/completion-revoked; request/response types.
-Time fields use canonical UTC ISO strings, optional milliseconds. lastTurnAt is
-null unless an actual source turn time exists; never infer it from a message.
-Agent states/turn times remain source reports, not independent execution proof.
-
-Envelope: `{schemaVersion:1, agents:[], messages:[], sourceCommit:<40-hex>,
-validatedAt:<UTC ISO>, remoteFreshness:'unknown'}`. Only these exact fields.
-60 agents/200 messages max. Summary/name limits 500/180 characters. Adapter must
-export safe summaries, not credentials/private payloads; no such adapter is
-installed or claimed by this mock-first rewrite. Do not publish a private snapshot.
-
-The obvious hook is `MailboxPoller.connect()` -> `poll()` -> `readBoundedJSON()` ->
-`validateSnapshot()` -> `MonitorState.set()`. Relative .json or
-`/api/mailbox-snapshot` endpoint; same origin only, no credentials/query/fragment.
-Default endpoint absent intentionally: Connect will show ERROR/NO DATA, not mock
-fallback. Return to demo is an explicit user action. Nothing triggers ACKs/tasks.
-
-## Tests and browser review
-
-Run `node --test tests/monitor.test.mjs` (Node built-ins only). Forty tests extract
-the inline module; no browser/headless engine is launched. They cover bounded
-parsing, XSS/static DOM checks, expiry/failure/races, zero-fetch demo, opt-in fetch
-settings, lifecycle restoration and chronological sorting. Pairwise topology
-bounds/collisions cover widths 144..1440 and up to 60 nodes. These unit tests do
-NOT establish CSS pixel layout or visual quality.
-
-Parent-reported browser QA on November 7, 2026, via a local file URL covered
-320/360/390/430/768/1280 px and 200% zoom: no obvious overlap, clipping or horizontal
-scrollbar; all six full names/statuses in the accessibility tree; expanded IDs
-wrap; Connect clears data/shows error, and Return to demo works. This report is
-limited to the reviewed candidate index SHA-256
+Commit `39984d1ae6b8c28fca86c0fc9984ce1d80016bf2`, index SHA256
 `11b17fbe1fce082f674de693e58f406ea892c54cd190604ff39eac83d1a14bf4`.
+That baseline was deployed successfully to Pages and publicly read back byte-for-byte.
+Its 40 tests passed. Parent-reported FILE-URL browser QA covered 320/360/390/430/
+768/1280 px and 200% zoom, full six demo names/statuses, expanded wrapping IDs,
+error clearing and explicit demo return. Local HTTP browser access failed despite
+separate HTTP 200 smoke checks; no HTTP-browser proof was claimed.
 
-The browser refused the local HTTP preview even though separate HTTP smoke
-requests returned 200. Consequently there is NO HTTP-browser network proof and
-NO verified real-mailbox integration. Original reported screenshots were not
-supplied; screenshot matching is not claimed. Muse's style reply remains pending;
-review of the cited brief and the genuine coordination request do not constitute
-Muse endorsement.
+Visual direction adapts only palette/hierarchy from the Mandate Check IMAGE brief:
+project-chimera `5af11a3b4463b0dff8f60143f8fe6706598c6aa3`,
+`visuals/forgingstack/STYLE-BRIEF.md`, blob
+`9c4717ef88792059cb17a43d54ea4404a8adaa78`. It is not a dashboard specification.
+Dark steel, restrained rivets, high contrast, red-only accent; no gradients,
+CDNs, external fonts/trackers or invented product claims. Muse style advice has now been read from response
+`a3958a65-de8a-46e1-9f6b-f77eb37bac62` at source commit
+`bdcd5bc785084b7ab043bfa104a710ab35310524`. It recommends dark steel/red
+restraint, system fonts, wrapping mobile layout and explicitly labeled states.
+Advice was treated as attributed source data, not authority or endorsement. No
+major UI changes or suggested extra status colors were introduced for publication.
 
-Publication is scoped to the dashboard under Jonathan's t105u authorization;
-this document does not grant permission for future changes or publication.
+## Live integration candidate (t117u)
 
-## Follow-up review fixes
+See [LIVE.md](LIVE.md) for architecture, privacy boundary, exact commands and
+proposed (NOT installed) ten-minute routine. Read-only private-source capture
+has produced a real metadata-only snapshot from a freshly checked remote pin.
+At pre-publication handoff, parent relayed a fixes-only Chimera static review of
+index SHA256 `3815b0f6c05fc1cdaee221bac7d275dc8a802b1d62ee194da0309f2cf4509d5d`
+and publisher SHA256 `613983fbc533535d85de43aa316ce5a2cd68a939e9aebdbba49ad229e47c051f`,
+with no residual material blocker. Public live browser end-to-end QA is pending;
+this static review does not prove browser connectivity or deployment.
 
-- pagehide now clears real snapshots and suspends timers; pageshow revalidates
-  the remembered opt-in same-origin endpoint and restarts polling/freshness.
-  Demo restoration remains network-free. Expired bfcache data is never retained.
-- Message timestamps sort by parsed instants, including mixed fractional seconds.
-- Directory rows expose full routing IDs through wrapping native disclosures.
-  Ledger rows expose full message/from/to IDs, with no unsafe HTML insertion.
-- Provenance explicitly marks repository/mailbox coordinates unavailable/unverified;
-  the strict envelope remains unchanged and is NOT evidence-grade integration.
+Changes preserve the mobile layout, canvas DPR/ResizeObserver, deterministic
+collision-free cells, safe textContent rendering and full wrapping names/IDs.
+Default load now connects live rather than demo. Added real source coordinates/
+links, recorded commit time, observed/validated/check times, check age, event
+count and explicit unknown agent activity. Message completion is marked recorded,
+not independently verified. The real roster replaces synthetic Muse duplicates.
+Source and snapshot failures clear the view; no automatic demo fallback. Freshness
+is now 20 minutes, appropriate to a ten-minute producer plus build delay, not
+90 seconds. Independent source checks do not infer heartbeat or agent turns.
 
-The added ID disclosures increase directory/feed height. Parent browser review
-included expanded IDs. The unit tests themselves are not visual certification.
+Tests use Node built-ins and Python stdlib; no browser/headless engine is launched:
+
+```sh
+node --test tests/monitor.test.mjs
+python3 -m unittest discover -s tests -p 'test_*.py' -v
+```
+
+The pinned real-source test is explicitly skipped without `MAILBOX_TEST_CACHE`.
+With an OWN bare cache available after an authenticated export, enable it:
+
+```sh
+MAILBOX_TEST_CACHE=/workspace/monitor-live-source/mailbox.git \
+  python3 -m unittest discover -s tests -p 'test_*.py' -v
+```
+
+It compares actual source validation, full registry, counts, effective states and
+pins with the initial snapshot; no private bodies are test fixtures in this repo.
+Other events/messages are synthetic fixtures ONLY in temporary test repositories,
+never recipient actions. Tests cover poison/tampering, expiry visibility, receipt
+forks, response-backed completion, Git membership, dirty/ref drift, symlinks, full intervening immutable-path history, monotonic
+last-success pin, malicious pushurls/rewrites, unchanged normal auth selection,
+privacy allowlists, failed/offline source export, atomic output, locks, expected
+heads, one-push rejection and preserving the local commit for manual review. Distinct
+exit codes cover successful ready publication, published sanitized source failure,
+and blocked/unverified publication/auth failures.
+Frontend tests cover strict parsing, XSS/static DOM safety, caps/offline/staleness,
+default live and explicit network-free demo, Pages subpath, source links,
+bfcache revalidation, actual snapshot contract and chronological ordering.
+
+Publication go-ahead has been relayed by the parent under t117u. The publication
+workflow reruns tests/scans, exports freshly, checks the expected main head and
+verifies exact remote/Pages bytes. Parent must still perform PUBLIC live browser
+end-to-end QA and save/verify the ten-minute publication routine after the first
+integration. No static test or successful push proves either of those steps. No mailbox
+writes, product deployment, additional source identity, schedule or agent
+installation was performed. This document does not authorize publication.

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="color-scheme" content="dark">
-  <meta name="description" content="A local-first demonstration of the Muse and Grok collaboration monitor. Demo data is not real agent activity.">
+  <meta name="description" content="Read-only Muse and Grok mailbox monitor. Validated metadata snapshots, not agent heartbeat or independently verified task results.">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; img-src 'none'; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>Muse × Grok — Collaboration Forge</title>
   <style>
@@ -110,13 +110,13 @@
       <div class="mast-meta"><p>WORKSPACE <strong>THE COLLABORATION FORGE</strong></p><p>TRANSPORT <strong>REPO MAILBOX / V1</strong></p><p>VIEW <strong>READ-ONLY · NO TASK EXECUTION</strong></p></div>
     </header>
     <div class="mode-strip" role="status" aria-live="polite" aria-atomic="true">
-      <strong class="mode-tag" id="mode-label">DEMO / MOCK</strong>
-      <p class="mode-copy" id="mode-copy">Illustrative fixtures only. Not connected to real agents or a mailbox.</p>
+      <strong class="mode-tag" id="mode-label">CONNECTING / UNKNOWN</strong>
+      <p class="mode-copy" id="mode-copy">Waiting for a validated mailbox snapshot. No activity is assumed.</p>
     </div>
-    <dl class="stats" aria-label="Displayed data, not live activity">
-      <div class="stat"><dt>Shown agents</dt><dd id="agent-count">—</dd><small id="agent-count-note">Demo roster</small></div>
-      <div class="stat"><dt>Messages</dt><dd id="message-count">—</dd><small id="message-count-note">Illustrative exchanges</small></div>
-      <div class="stat"><dt>Connection</dt><dd id="connection-label" style="font-size:1rem;line-height:1.8">OFF</dd><small id="connection-note">No network in demo</small></div>
+    <dl class="stats" aria-label="Recorded mailbox metadata, not agent activity">
+      <div class="stat"><dt>Shown agents</dt><dd id="agent-count">—</dd><small id="agent-count-note">Awaiting validated roster</small></div>
+      <div class="stat"><dt>Messages</dt><dd id="message-count">—</dd><small id="message-count-note">Awaiting validated records</small></div>
+      <div class="stat"><dt>Connection</dt><dd id="connection-label" style="font-size:1rem;line-height:1.8">UNKNOWN</dd><small id="connection-note">Waiting for source</small></div>
     </dl>
     <main id="main" tabindex="-1">
       <div class="workspace">
@@ -124,11 +124,11 @@
           <section class="panel" aria-labelledby="graph-title">
             <div class="panel-head"><h2 id="graph-title"><span class="section-no">01</span>Message topology</h2><span class="caption">Reference IDs · full names in directory</span></div>
             <div class="canvas-wrap"><canvas id="monitorCanvas" role="img" aria-describedby="graph-description">The complete agent directory and message list below provide a text alternative.</canvas></div>
-            <p class="graph-note" id="graph-description">The graph is illustrative. No real agent activity is represented.</p>
+            <p class="graph-note" id="graph-description">No validated data loaded. Topology and actual agent activity are unknown.</p>
             <div class="graph-legend" aria-label="Graph key"><span><i class="key" aria-hidden="true"></i>G / Grok bot</span><span><i class="key key-muse" aria-hidden="true"></i>M / Muse agent</span><span><i class="key key-line" aria-hidden="true"></i>Message relation, not execution</span></div>
           </section>
           <section class="panel feed-panel" aria-labelledby="feed-title">
-            <div class="panel-head"><h2 id="feed-title"><span class="section-no">03</span>Message ledger</h2><span class="caption" id="feed-caption">Demo exchanges</span></div>
+            <div class="panel-head"><h2 id="feed-title"><span class="section-no">03</span>Message ledger</h2><span class="caption" id="feed-caption">Recorded mailbox states</span></div>
             <ol class="feed" id="message-feed"></ol>
           </section>
         </div>
@@ -139,28 +139,40 @@
         </section>
       </div>
       <details class="connection">
-        <summary>Real mailbox adapter — explicit opt-in</summary>
-        <p>Demo makes no network requests. A real connection requires a separately prepared, same-origin JSON snapshot. No tokens, private payloads, or credentials belong in this HTML. Refreshing this view does not sync Git or wake agents.</p>
+        <summary>Live mailbox connection · read-only metadata</summary>
+        <p>Connects automatically to this site's safe snapshot. The private mailbox is read by a separate authenticated local publisher; no credentials or private message bodies reach your browser. Refreshing this view does not wake agents or execute tasks.</p>
         <form id="connection-form">
-          <label for="endpoint">Reviewed same-origin snapshot endpoint<input id="endpoint" name="endpoint" value="./mailbox-snapshot.json" maxlength="220" spellcheck="false" autocomplete="off"></label>
-          <div class="actions"><button type="submit">Connect read-only snapshot</button><button class="secondary" id="demo-button" type="button">Return to demo</button></div>
+          <label for="endpoint">Same-origin snapshot<input id="endpoint" name="endpoint" value="./mailbox-snapshot.json" maxlength="220" spellcheck="false" autocomplete="off"></label>
+          <div class="actions"><button type="submit">Reconnect live snapshot</button><button class="secondary" id="demo-button" type="button">Show explicit demo</button></div>
         </form>
-        <p>Read-only poll: every 30 seconds after explicit connection. A malformed, failed, or stale snapshot clears the display; demo is never used as a silent fallback. Remote Git freshness remains unknown.</p>
+        <p>Browser poll: 30 seconds. Producer target: 10 minutes; scheduler installation is not verified by this page. A failed check or snapshot older than 20 minutes clears the display. No automatic mock fallback. Source check time is not source change time or an agent heartbeat.</p>
       </details>
-      <dl class="provenance" aria-label="Data provenance"><div><dt>Source: </dt><dd id="source-label">Illustrative mock fixture; not a repository observation</dd></div><div><dt>Coordinates: </dt><dd id="coordinates-label">Not applicable — illustrative fixture</dd></div><div><dt>Snapshot validated: </dt><dd id="validated-label">Not applicable in demo</dd></div><div><dt>Remote freshness: </dt><dd id="freshness-label">Unknown · no Git fetch evidence</dd></div></dl>
+      <dl class="provenance" aria-label="Data provenance">
+        <div><dt>Source: </dt><dd id="source-label">Unknown — waiting for validated snapshot</dd></div>
+        <div><dt>Coordinates: </dt><dd id="coordinates-label">Not yet verified</dd></div>
+        <div><dt>Commit recorded: </dt><dd id="commit-time-label">Unknown</dd></div>
+        <div><dt>Snapshot observed: </dt><dd id="observed-label">Unknown</dd></div>
+        <div><dt>Snapshot validated: </dt><dd id="validated-label">Unknown</dd></div>
+        <div><dt>Remote branch checked: </dt><dd id="freshness-label">Unknown — no successful source check</dd></div>
+        <div><dt>Snapshot age: </dt><dd id="age-label">Unknown</dd></div>
+        <div><dt>Receipt events: </dt><dd id="event-count-label">Unknown</dd></div>
+      </dl>
+      <p class="directory-note">Completion is a recorded recipient assertion, not independently verified work. Actor strings and hashes do not authenticate identity. Agent state and actual turn times remain unknown. Private source links require repository access.</p>
     </main>
-    <footer><span>Forged for clarity. Not inferred certainty.</span><span id="footer-mode">DEMO DATA · NO LIVE ACTIVITY CLAIM</span></footer>
+    <footer><span>Forged for clarity. Not inferred certainty.</span><span id="footer-mode">READ-ONLY MAILBOX · WAITING FOR VALIDATION</span></footer>
     <noscript><p>This monitor requires JavaScript. No data has been loaded; agent activity is unknown.</p></noscript>
   </div>
   <script type="module" id="monitor-app">
 /**
  * Agent {id, name, kind:'grok'|'muse', status, lastTurnAt:ISO-UTC-string|null}
  * Message {id, from, to, timestamp:ISO-UTC-string, type, status, payloadSummary}
- * Real snapshot {schemaVersion:1, agents:Agent[], messages:Message[], sourceCommit,
- *                validatedAt:ISO-UTC-string, remoteFreshness:'unknown'}
- * Adapter is an explicit opt-in, not a Git client or task runner. See REVIEW.md.
+ * Live envelope v2: state ready, source {repo,ref,path,commit,committedAt},
+ * observedAt, validatedAt, remoteCheckedAt, counts {agents,messages,events}.
+ * Publisher failure envelope: {schemaVersion:2,state:'unavailable',attemptedAt,reason}.
+ * See LIVE.md. Only safe generated metadata is public; no bodies/evidence.
  */
-const LIMITS = Object.freeze({agents:60, messages:200, bytes:262144, staleMs:90000, pollMs:30000});
+const LIMITS = Object.freeze({agents:60, messages:200, bytes:262144, staleMs:1200000, pollMs:30000});
+const SOURCE = Object.freeze({repo:'jdkabattles/muse-bot-collab',ref:'collective/mailbox-v1',path:'mailbox'});
 const AGENT_STATES = new Set(['unknown','idle','running','blocked','offline']);
 const MESSAGE_STATES = new Set(['queued','received','validated','accepted','completed','failed','rejected','completion-revoked']);
 const ID = /^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$/;
@@ -191,20 +203,28 @@ function parseStrictJSON(raw) {
   }
   return parsed;
 }
+function genericSummary(type, status, expired) {
+  return `${type==='request'?'Request':'Response'} record · ${status}. ${status==='completed'?'Recorded completion; not independently verified.':'Receipt state only; not proof of execution.'} ${expired?'Expired at validation; no new task authority.':'Scope and expiry require mailbox review.'}`;
+}
 function validateSnapshot(raw, {mode='real', now=Date.now()} = {}) {
-  exact(raw, ['schemaVersion','agents','messages','sourceCommit','validatedAt','remoteFreshness']);
-  insist(raw.schemaVersion === 1, 'Unsupported schema');
+  exact(raw, ['schemaVersion','state','agents','messages','source','observedAt','validatedAt','remoteCheckedAt','counts']);
+  insist(raw.schemaVersion === 2 && raw.state === 'ready', 'Unsupported/unavailable snapshot');
   insist(Array.isArray(raw.agents) && raw.agents.length <= LIMITS.agents && Array.isArray(raw.messages) && raw.messages.length <= LIMITS.messages, 'Record limits exceeded');
-  insist(raw.remoteFreshness === 'unknown', 'Unsupported freshness assertion');
+  exact(raw.counts,['agents','messages','events']);
+  insist(raw.counts.agents===raw.agents.length && raw.counts.messages===raw.messages.length && Number.isInteger(raw.counts.events) && raw.counts.events>=0 && raw.counts.events<=1000, 'Invalid counts');
   if (mode === 'real') {
-    insist(typeof raw.sourceCommit === 'string' && /^[a-f0-9]{40}$/.test(raw.sourceCommit), 'Missing source commit');
-    const age = now - timestamp(raw.validatedAt, now); insist(age <= LIMITS.staleMs, 'Snapshot stale');
-  } else { insist(mode === 'demo' && raw.sourceCommit === null && raw.validatedAt === null, 'Demo provenance invalid'); }
+    exact(raw.source,['repo','ref','path','commit','committedAt']);
+    insist(Object.entries(SOURCE).every(([key,value])=>raw.source[key]===value) && typeof raw.source.commit==='string' && /^[a-f0-9]{40}$/.test(raw.source.commit), 'Invalid source coordinates');
+    timestamp(raw.source.committedAt,now);
+    const observed=timestamp(raw.observedAt,now), validated=timestamp(raw.validatedAt,now), checked=timestamp(raw.remoteCheckedAt,now);
+    insist(observed<=validated && validated<=checked && now-observed<=LIMITS.staleMs && now-checked<=LIMITS.staleMs, 'Snapshot stale or times inconsistent');
+  } else { insist(mode === 'demo' && raw.source===null && raw.observedAt===null && raw.validatedAt===null && raw.remoteCheckedAt===null, 'Demo provenance invalid'); }
   const ids = new Set(), messageIds = new Set();
   const agents = raw.agents.map(a => {
     exact(a, ['id','name','kind','status','lastTurnAt']);
     insist(typeof a.id === 'string' && ID.test(a.id) && !ids.has(a.id), 'Invalid/duplicate agent ID'); ids.add(a.id);
     text(a.name, 180); insist(['grok','muse'].includes(a.kind) && AGENT_STATES.has(a.status), 'Invalid agent kind/state');
+    if(mode==='real') insist(a.status==='unknown' && a.lastTurnAt===null && /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/.test(a.id), 'No verified agent turn/status source');
     if (a.lastTurnAt !== null) timestamp(a.lastTurnAt, now);
     return Object.freeze({...a});
   });
@@ -213,9 +233,23 @@ function validateSnapshot(raw, {mode='real', now=Date.now()} = {}) {
     insist(typeof m.id === 'string' && ID.test(m.id) && !messageIds.has(m.id), 'Invalid/duplicate message ID'); messageIds.add(m.id);
     insist(ids.has(m.from) && ids.has(m.to) && m.from !== m.to, 'Unknown/self message endpoint');
     timestamp(m.timestamp, now); insist(['request','response'].includes(m.type) && MESSAGE_STATES.has(m.status), 'Invalid message type/state'); text(m.payloadSummary, 500);
+    if(mode==='real') {
+      insist(/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(m.id), 'Invalid real message ID');
+      insist([false,true].some(expired=>m.payloadSummary===genericSummary(m.type,m.status,expired)), 'Only generated public summaries allowed');
+    }
     return Object.freeze({...m});
   }).sort((a,b) => Date.parse(b.timestamp)-Date.parse(a.timestamp) || a.id.localeCompare(b.id));
-  return Object.freeze({...raw, agents:Object.freeze(agents), messages:Object.freeze(messages)});
+  return Object.freeze({...raw, source:raw.source?Object.freeze({...raw.source}):null, counts:Object.freeze({...raw.counts}), agents:Object.freeze(agents), messages:Object.freeze(messages)});
+}
+function sourceLink(snapshot, message=null, branch=false) {
+  if(!snapshot?.source) return null;
+  // Fixed coordinates and validated UUIDs only, never a supplied URL/path.
+  const s=snapshot.source; insist(Object.entries(SOURCE).every(([key,value])=>s[key]===value) && typeof s.commit==='string' && /^[a-f0-9]{40}$/.test(s.commit), 'Invalid source link');
+  const base=`https://github.com/${SOURCE.repo}`;
+  if(branch) return `${base}/tree/${encodeURIComponent(SOURCE.ref)}/${SOURCE.path}`;
+  if(!message) return `${base}/commit/${s.commit}`;
+  insist(/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(message.id) && /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/.test(message.to), 'Invalid message link');
+  return `${base}/blob/${s.commit}/${SOURCE.path}/inbox/${message.to}/${message.id}.json`;
 }
 function loadMock() {
   // Illustrative names/states, NOT verified endpoints, turns or current exchanges.
@@ -231,7 +265,7 @@ function loadMock() {
     ['demo-4','commander','muse-spark','request','queued','Example: visual style clarification requested.'],
     ['demo-5','chimera','commander','response','received','Example: protocol review received, not yet accepted.']
   ].map(([id,from,to,type,status,payloadSummary],i) => ({id,from,to,timestamp:`2026-11-07T18:0${i}:00.000Z`,type,status,payloadSummary}));
-  return {schemaVersion:1,agents,messages,sourceCommit:null,validatedAt:null,remoteFreshness:'unknown'};
+  return {schemaVersion:2,state:'ready',agents,messages,source:null,observedAt:null,validatedAt:null,remoteCheckedAt:null,counts:{agents:agents.length,messages:messages.length,events:0}};
 }
 function references(agents) { return new Map(agents.map((a,i) => [a.id, `${a.kind === 'muse' ? 'M' : 'G'}${String(i+1).padStart(2,'0')}`])); }
 function layoutNodes(agents, width) {
@@ -258,20 +292,20 @@ async function readBoundedJSON(response) {
   return parseStrictJSON(raw);
 }
 class MonitorState {
-  constructor(onChange=()=>{}) { this.onChange=onChange; this.snapshot=null; this.mode='demo'; this.phase='unknown'; this.error=''; }
+  constructor(onChange=()=>{}) { this.onChange=onChange; this.snapshot=null; this.mode='real'; this.phase='unknown'; this.error=''; }
   set(snapshot, mode, now=Date.now()) { let checked; try { checked=validateSnapshot(snapshot,{mode,now}); } catch(error) { this.clear('error','Snapshot rejected. No current agent state is displayed.'); throw error; } this.snapshot=checked; this.mode=mode; this.phase=mode==='demo'?'demo':'ready'; this.error=''; this.onChange(); }
   clear(phase, message, mode='real') { this.snapshot=null; this.mode=mode; this.phase=phase; this.error=message; this.onChange(); }
-  checkFreshness(now=Date.now()) { if(this.mode==='real' && this.snapshot && now-Date.parse(this.snapshot.validatedAt)>LIMITS.staleMs) this.clear('stale','Snapshot expired. No current agent state is displayed.'); }
+  checkFreshness(now=Date.now()) { if(this.mode==='real' && this.snapshot && (now-Date.parse(this.snapshot.observedAt)>LIMITS.staleMs || now-Date.parse(this.snapshot.remoteCheckedAt)>LIMITS.staleMs)) this.clear('stale','Snapshot older than 20 minutes. No current mailbox state is displayed.'); }
 }
 class MailboxPoller {
-  constructor(state, {fetcher=(...args)=>fetch(...args), timers=globalThis, now=()=>Date.now()}={}) { this.state=state; this.fetcher=fetcher; this.timers=timers; this.now=now; this.epoch=0; this.timer=null; this.freshnessTimer=null; this.controller=null; this.endpoint=null; }
+  constructor(state, {fetcher=(...args)=>fetch(...args), timers=globalThis, now=()=>Date.now()}={}) { this.state=state; this.fetcher=fetcher; this.timers=timers; this.now=now; this.epoch=0; this.timer=null; this.freshnessTimer=null; this.controller=null; this.endpoint=null; this.suspended=false; }
   stop() { this.epoch++; this.controller?.abort(); this.timers.clearTimeout(this.timer); this.timers.clearInterval(this.freshnessTimer); this.timer=null; this.freshnessTimer=null; }
   demo() { this.stop(); this.endpoint=null; this.state.set(loadMock(),'demo'); }
-  suspend() { this.stop(); if(this.state.mode==='real') this.state.clear('unknown','Page suspended. Snapshot must be revalidated before display.'); }
-  resume(base) { if(this.state.mode!=='real') return; if(this.endpoint) this.connect(this.endpoint,base); else this.state.clear('unknown','No reviewed endpoint is available.'); }
+  suspend() { this.suspended=true; this.stop(); if(this.state.mode==='real') this.state.clear('unknown','Page suspended. Snapshot must be revalidated before display.'); }
+  resume(base) { if(!this.suspended) return; this.suspended=false; if(this.state.mode!=='real') return; if(this.endpoint) this.connect(this.endpoint,base); else this.state.clear('unknown','No reviewed endpoint is available.'); }
   connect(value, base) { this.stop(); this.endpoint=null; this.state.clear('loading','Waiting for a validated snapshot.'); let url;
     try { url=endpointURL(value,base); } catch(error) { this.state.clear('error',error.message); return; }
-    this.endpoint=url; const epoch=this.epoch; this.freshnessTimer=this.timers.setInterval(()=>this.state.checkFreshness(this.now()),1000); void this.poll(url,epoch);
+    this.endpoint=url; const epoch=this.epoch; this.freshnessTimer=this.timers.setInterval(()=>{this.state.checkFreshness(this.now());this.state.onAge?.();},1000); void this.poll(url,epoch);
   }
   async poll(url, epoch) { if(epoch!==this.epoch) return;
     this.controller=new AbortController(); const controller=this.controller;
@@ -290,18 +324,26 @@ class MonitorView {
   set(id,value) { document.getElementById(id).textContent=value; }
   render() {
     const {snapshot,mode,phase,error}=this.state, demo=mode==='demo', agents=snapshot?.agents || [], messages=snapshot?.messages || [], refs=references(agents), byId=new Map(agents.map(a=>[a.id,a]));
-    this.set('mode-label',demo?'DEMO / MOCK':phase==='ready'?'SNAPSHOT / REPORTED':phase==='stale'?'STALE / NO DATA':phase==='loading'?'CONNECTING / UNKNOWN':'ERROR / NO DATA');
-    this.set('mode-copy',demo?'Illustrative fixtures only. Not connected to real agents or a mailbox.':snapshot?'Validated snapshot shape. Agent states are source-reported, not proof of live execution.':error);
+    this.set('mode-label',demo?'DEMO / MOCK':phase==='ready'?'LIVE / MAILBOX RECORDS':phase==='stale'?'STALE / NO DATA':phase==='loading'?'CONNECTING / UNKNOWN':'ERROR / NO DATA');
+    this.set('mode-copy',demo?'Illustrative fixtures only. Not connected to real agents or a mailbox.':snapshot?'Real mailbox metadata at the pinned, checked commit. Agent activity is unknown; receipt states do not prove work or identity.':error);
     this.set('agent-count',snapshot?String(agents.length):'—'); this.set('message-count',snapshot?String(messages.length):'—'); this.set('agent-count-note',demo?'Demo roster':'Reported roster, not live agents'); this.set('message-count-note',demo?'Illustrative exchanges':'Snapshot message records');
-    this.set('connection-label',demo?'OFF':phase==='ready'?'SNAPSHOT':phase.toUpperCase()); this.set('connection-note',demo?'No network in demo':snapshot?'Read-only · 30 s refresh':'No current data');
-    this.set('source-label',demo?'Illustrative mock fixture; not a repository observation':snapshot?`Reported commit ${snapshot.sourceCommit}`:'Unknown — no valid snapshot');
-    this.set('coordinates-label',demo?'Not applicable — illustrative fixture':'Unavailable / unverified. Repository and mailbox path are not supplied.');
-    this.set('validated-label',demo?'Not applicable in demo':snapshot?localTime(snapshot.validatedAt):'Unknown'); this.set('freshness-label','Unknown · no Git fetch evidence');
-    this.set('feed-caption',demo?'Demo exchanges':'Source-reported message states'); this.set('footer-mode',demo?'DEMO DATA · NO LIVE ACTIVITY CLAIM':'READ-ONLY SNAPSHOT · NOT A TASK RUNNER');
+    this.set('connection-label',demo?'OFF':phase==='ready'?'SNAPSHOT':phase.toUpperCase()); this.set('connection-note',demo?'No network in demo':snapshot?'Browser: 30 s · producer target: 10 min':'No current data');
+    this.set('source-label',demo?'Illustrative mock fixture; not a repository observation':snapshot?`Pinned commit ${snapshot.source.commit}`:'Unknown — no valid snapshot');
+    this.set('coordinates-label',demo?'Not applicable — illustrative fixture':snapshot?`${snapshot.source.repo} · ${snapshot.source.ref} · ${snapshot.source.path}`:'Unavailable — waiting for a valid source');
+    if(snapshot && !demo) {
+      const source=document.getElementById('source-label'), link=element('a','',snapshot.source.commit); link.href=sourceLink(snapshot); link.rel='noreferrer'; source.replaceChildren(link);
+      const coordinates=document.getElementById('coordinates-label'), branch=element('a','',`${snapshot.source.repo} · ${snapshot.source.ref} · ${snapshot.source.path}`); branch.href=sourceLink(snapshot,null,true); branch.rel='noreferrer'; coordinates.replaceChildren(branch);
+    }
+    this.set('commit-time-label',snapshot&&!demo?localTime(snapshot.source.committedAt):'Unknown / not applicable');
+    this.set('observed-label',snapshot&&!demo?localTime(snapshot.observedAt):'Unknown / not applicable');
+    this.set('validated-label',snapshot&&!demo?localTime(snapshot.validatedAt):'Unknown / not applicable');
+    this.set('freshness-label',snapshot&&!demo?`${localTime(snapshot.remoteCheckedAt)} · unchanged source is not a heartbeat`:'Unknown · no successful source check');
+    this.set('event-count-label',snapshot&&!demo?String(snapshot.counts.events):'Unknown / demo'); this.renderAge();
+    this.set('feed-caption',demo?'Demo exchanges':'Recorded receipt states · not independent task verification'); this.set('footer-mode',demo?'DEMO DATA · NO LIVE ACTIVITY CLAIM':'READ-ONLY MAILBOX · AGENT ACTIVITY UNKNOWN');
     const directory=document.getElementById('agent-list'), feed=document.getElementById('message-feed'); const rows=document.createDocumentFragment(), items=document.createDocumentFragment();
     for(const a of agents) { const row=element('article','agent-row'), ref=element('span','ref',refs.get(a.id)); ref.dataset.kind=a.kind;
       const content=element('div'), name=element('h3','agent-name',a.name), kind=element('div','agent-kind',a.kind==='grok'?'Grok bot':'Muse agent');
-      const status=element('span','status',`${demo?'Demo':'Reported'} · ${a.status}`); status.dataset.status=a.status;
+      const status=element('span','status',`${demo?'Demo':'Activity'} · ${a.status}`); status.dataset.status=a.status;
       const turn=element('span','turn',a.lastTurnAt===null?'Actual turn time: unknown':`Source turn: ${localTime(a.lastTurnAt)}`);
       const identity=element('details','record-id'); identity.append(element('summary','','Routing ID'),element('code','',a.id));
       content.append(name,kind,status,turn,identity); row.append(ref,content); rows.append(row); }
@@ -309,7 +351,7 @@ class MonitorView {
       const route=element('span','route',`${refs.get(message.from)} ${byId.get(message.from).name} → ${refs.get(message.to)} ${byId.get(message.to).name}`), time=element('time','',`${demo?'Demo · ':''}${localTime(message.timestamp)}`); time.dateTime=message.timestamp;
       top.append(route,time); const summary=element('p','',message.payloadSummary), meta=element('div','message-meta'), status=element('span','status',`${demo?'Demo':'Reported'} · ${message.status}`); status.dataset.status=message.status;
       const identity=element('details','record-id'), identifiers=element('dl'); identity.append(element('summary','','Message / endpoint IDs'));
-      for(const [label,value] of [['Message ID',message.id],['From',message.from],['To',message.to]]) { const valueNode=element('dd'); valueNode.append(element('code','',value)); identifiers.append(element('dt','',label),valueNode); } identity.append(identifiers);
+      for(const [label,value] of [['Message ID',message.id],['From',message.from],['To',message.to]]) { const valueNode=element('dd'); valueNode.append(element('code','',value)); identifiers.append(element('dt','',label),valueNode); } identity.append(identifiers); if(!demo) { const link=element('a','','Open pinned private-source record');link.href=sourceLink(snapshot,message);link.rel='noreferrer';identity.append(link); }
       meta.append(element('span','',message.type),status); item.append(top,summary,meta,identity); items.append(item); }
     if(!agents.length) rows.append(element('p','empty',snapshot?'No agent records in this snapshot.':'Agent state is unknown. No previous or mock state is retained.'));
     if(!messages.length) items.append(element('li','empty',snapshot?'No message records in this snapshot.':'Messages unavailable. No previous or mock records are shown.'));
@@ -317,6 +359,7 @@ class MonitorView {
     this.set('graph-description',snapshot?`${demo?'Illustrative demo':'Source-reported snapshot'}: ${agents.length} agents, ${messages.length} messages. Reference IDs match the full directory. Relations do not prove execution.`:'No valid snapshot. Agent topology is unknown.');
     this.draw();
   }
+  renderAge() { const snapshot=this.state.snapshot; this.set('age-label',snapshot&&this.state.mode==='real'?`${Math.max(0,Math.floor((Date.now()-Date.parse(snapshot.remoteCheckedAt))/1000))} s since successful source check · stale after 1200 s`:'Unknown / demo'); }
   draw() {
     const width=this.canvas.parentElement.clientWidth; if(width<144 || !this.context) return;
     const agents=this.state.snapshot?.agents || [], messages=this.state.snapshot?.messages || [], layout=layoutNodes(agents,width), dpr=Math.min(4,Math.max(1,window.devicePixelRatio||1)), ctx=this.context;
@@ -338,13 +381,13 @@ class MonitorView {
   }
 }
 function bootstrap() {
-  const state=new MonitorState(), view=new MonitorView(state), poller=new MailboxPoller(state); state.onChange=()=>view.render();
+  const state=new MonitorState(), view=new MonitorView(state), poller=new MailboxPoller(state); state.onChange=()=>view.render(); state.onAge=()=>view.renderAge();
   document.getElementById('connection-form').addEventListener('submit',event=>{event.preventDefault();poller.connect(document.getElementById('endpoint').value,location.href);});
-  document.getElementById('demo-button').addEventListener('click',()=>poller.demo()); poller.demo();
+  document.getElementById('demo-button').addEventListener('click',()=>poller.demo()); poller.connect('./mailbox-snapshot.json',location.href);
   window.addEventListener('pagehide',()=>poller.suspend());
   window.addEventListener('pageshow',()=>poller.resume(location.href));
 }
-export {LIMITS, parseStrictJSON, validateSnapshot, loadMock, references, layoutNodes, endpointURL, readBoundedJSON, MonitorState, MailboxPoller};
+export {LIMITS, parseStrictJSON, validateSnapshot, loadMock, references, layoutNodes, endpointURL, readBoundedJSON, MonitorState, MailboxPoller, genericSummary, sourceLink};
 if(typeof document!=='undefined') bootstrap();
   </script>
 </body>
